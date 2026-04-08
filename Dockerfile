@@ -82,7 +82,8 @@ RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install httpie
 WORKDIR /workspace
 
 COPY scripts/misc-cli-utils.sh scripts/apigee-hybrid-aks-setup.sh /workspace/scripts/
-RUN chmod +x /workspace/scripts/apigee-hybrid-aks-setup.sh
+RUN chmod +x /workspace/scripts/apigee-hybrid-aks-setup.sh \
+    && ln -sf /workspace/scripts/apigee-hybrid-aks-setup.sh /usr/bin/apigee-hybrid-aks-setup
 
 RUN mkdir -p apigee-hybrid/helm-charts
 
