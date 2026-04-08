@@ -6,13 +6,13 @@ Based on [`vergissberlin/ubuntu-development:24.04`](https://hub.docker.com/r/ver
 
 ## Included Tools
 
-| Tool | Description |
-|------|-------------|
-| [`gcloud`](https://cloud.google.com/sdk/gcloud) | Google Cloud CLI – manage Apigee and GCP resources |
-| [`az`](https://learn.microsoft.com/en-us/cli/azure/) | Azure CLI – manage AKS clusters and Azure resources |
-| [`kubectl`](https://kubernetes.io/docs/reference/kubectl/) | Kubernetes CLI – interact with AKS clusters |
-| [`helm`](https://helm.sh/) | Kubernetes package manager – deploy Apigee Hybrid charts |
-| [`httpie`](https://httpie.io/) | HTTP client – test and debug APIs |
+| Tool                                                       | Description                                              |
+|------------------------------------------------------------|----------------------------------------------------------|
+| [`gcloud`](https://cloud.google.com/sdk/gcloud)            | Google Cloud CLI – manage Apigee and GCP resources       |
+| [`az`](https://learn.microsoft.com/en-us/cli/azure/)       | Azure CLI – manage AKS clusters and Azure resources      |
+| [`kubectl`](https://kubernetes.io/docs/reference/kubectl/) | Kubernetes CLI – interact with AKS clusters              |
+| [`helm`](https://helm.sh/)                                 | Kubernetes package manager – deploy Apigee Hybrid charts |
+| [`httpie`](https://httpie.io/)                             | HTTP client – test and debug APIs                        |
 
 ## Quick Start
 
