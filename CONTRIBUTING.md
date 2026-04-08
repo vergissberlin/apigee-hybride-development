@@ -35,7 +35,7 @@ Common types used here: `feat`, `fix`, `docs`, `perf`, `refactor`, `ci`, `chore`
 
 ### Docker image publishing
 
-The [docker-publish workflow](.github/workflows/docker-publish.yml) builds and pushes the image on pushes to `main`, on git tags matching `v*`, and via manual workflow dispatch. The same logical tag is published to:
+The [docker-publish workflow](.github/workflows/docker-publish.yml) builds and pushes the image on pushes to `main`, on git tags matching `v*`, via manual workflow dispatch, and on a **weekly schedule** (Mondays 06:00 UTC) so the image is rebuilt regularly without a code change. The same logical tag is published to:
 
 - **Docker Hub:** [`vergissberlin/apigee-hybride-development`](https://hub.docker.com/r/vergissberlin/apigee-hybride-development)
 - **GitHub Container Registry:** `ghcr.io/<lowercase-owner>/<lowercase-repo>` (mirrors the GitHub repository name)

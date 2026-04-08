@@ -9,6 +9,8 @@
 # settings if you want public pulls without authentication.
 #
 # Docker Hub login also allows pulling a private base image (e.g. ubuntu-development).
+#
+# schedule: GitHub Actions cron is UTC (e.g. Mondays 06:00 UTC).
 
 name: Build and push Docker image
 
@@ -19,6 +21,8 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
 
 env:
   DOCKERHUB_IMAGE: vergissberlin/apigee-hybride-development
