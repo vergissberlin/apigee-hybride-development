@@ -21,7 +21,7 @@ ENV APIGEE_HELM_CHARTS_HOME=/workspace/apigee-hybrid/helm-charts \
     CHART_VERSION=${CHART_VERSION}
 
 # Install prerequisites
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt update && apt install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -42,8 +42,8 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
         | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
         > /etc/apt/sources.list.d/google-cloud-sdk.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends google-cloud-cli \
+    && apt update \
+    && apt install -y --no-install-recommends google-cloud-cli \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Azure CLI (az)
@@ -51,8 +51,8 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
         | gpg --dearmor -o /usr/share/keyrings/microsoft.gpg \
     && echo "deb [arch=${TARGETARCH} signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" \
         > /etc/apt/sources.list.d/azure-cli.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends azure-cli \
+    && apt update \
+    && apt install -y --no-install-recommends azure-cli \
     && rm -rf /var/lib/apt/lists/*
 
 # Install kubectl
@@ -60,8 +60,8 @@ RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key \
         | gpg --dearmor -o /usr/share/keyrings/kubernetes-apt-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /" \
         > /etc/apt/sources.list.d/kubernetes.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends kubectl \
+    && apt update \
+    && apt install -y --no-install-recommends kubectl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Helm (official tarball; more reliable than baltocdn apt repo under flaky HTTP/2)
