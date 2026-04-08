@@ -84,11 +84,14 @@ RUN mkdir -p apigee-hybrid/helm-charts
 
 WORKDIR /workspace/apigee-hybrid/helm-charts
 
+# Append to /root/.zshrc — do not overwrite; base image (ubuntu-development) ships oh-my-zsh here.
 RUN { \
+    echo ""; \
+    echo "# Apigee Hybrid (this image)"; \
     echo "export APIGEE_HELM_CHARTS_HOME=${APIGEE_HELM_CHARTS_HOME}"; \
     echo "export CHART_REPO=${CHART_REPO}"; \
     echo "export CHART_VERSION=${CHART_VERSION}"; \
-} > /root/.zshrc
+} >> /root/.zshrc
 
 RUN set -eux; \
     helm pull "${CHART_REPO}/apigee-operator" --version "${CHART_VERSION}" --untar; \

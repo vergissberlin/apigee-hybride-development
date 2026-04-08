@@ -17,6 +17,7 @@ Guidance for automated and human agents working in this repository. Prefer **sma
 
 - Change only what the task requires; avoid drive-by refactors or unrelated formatting.
 - Follow [Dockerfile](Dockerfile) patterns: `DEBIAN_FRONTEND=noninteractive`, `apt install` with `--no-install-recommends`, clean `rm -rf /var/lib/apt/lists/*` after apt steps.
+- The base image configures **oh-my-zsh** in `/root/.zshrc`; never overwrite that file—**append** (`>>`) Apigee-related exports only.
 - **CI** builds **linux/amd64** only. The Dockerfile uses **`ARG TARGETARCH`** (BuildKit) so **Azure CLI** and **Helm** install the correct architecture for local **arm64** (e.g. Apple Silicon) vs **amd64**; do not hardcode `arch=amd64` in new apt lines.
 - After Dockerfile edits, assume contributors will run `docker build -t apigee-hybrid-development:local .`; keep layers cache-friendly where reasonable.
 
