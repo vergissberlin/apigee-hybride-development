@@ -16,14 +16,18 @@ This repository is part of the [vergissberlin organization on GitHub](https://gi
 
 ## Quick Start
 
-```bash
-docker pull vergissberlin/apigee-hybride-development:latest
+Published images are **`linux/amd64`** (same as CI). On **Apple Silicon** (arm64), use **`--platform linux/amd64`** for `docker pull` and `docker run` so Docker pulls the correct manifest and runs the image (via emulation).
 
-docker run -it --rm \
+```bash
+docker pull --platform linux/amd64 vergissberlin/apigee-hybride-development:latest
+
+docker run -it --rm --platform linux/amd64 \
   -v ~/.kube:/root/.kube \
   -v ~/.config/gcloud:/root/.config/gcloud \
   vergissberlin/apigee-hybride-development:latest
 ```
+
+Or use [`just`](https://github.com/casey/just): `just pull` / `just run` (the repo `justfile` sets the platform for you).
 
 You can pass setup configuration with **`docker run -e KEY=value`**, **`--env-file .env`**, or a mounted file plus **`apigee-hybrid-aks-setup --from-env`** (see [docs/setup-script-environment.md](docs/setup-script-environment.md)). Set **`APIGEE_SETUP_NONINTERACTIVE=1`** to run without interactive prompts when all required variables are supplied.
 
@@ -35,16 +39,18 @@ Maintainers: where images are published, CI triggers, and registry setup are doc
 docker build -t apigee-hybride-development:local .
 ```
 
-On **Apple Silicon** (arm64), the image matches your machine. To match **CI** (`linux/amd64` only), use:
+To match the **published** image and **CI** (always `linux/amd64`), build with:
 
 ```bash
 docker build --platform linux/amd64 -t apigee-hybride-development:local .
 ```
 
+On **Apple Silicon**, a plain `docker build` produces an **arm64** image (different from the registry). Use `--platform linux/amd64` when you want the same architecture as Docker Hub / GHCR.
+
 The default shell is **bash** (`CMD ["/bin/bash"]`). **zsh** is also installed. **`APIGEE_HELM_CHARTS_HOME`**, **`CHART_REPO`**, and **`CHART_VERSION`** are set in the environment and in `/root/.zshrc` (see [Download charts](https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts)). The image build pulls the default Apigee Hybrid charts (operator, datastore, env, ingress-manager, org, redis, telemetry, virtualhost) from **`CHART_REPO`** at **`CHART_VERSION`** (override at build with `--build-arg CHART_VERSION=…`). Pulling from Google’s OCI registry may require **`gcloud auth application-default login`** (or equivalent) on the host building the image. Example:
 
 ```bash
-docker run -it --rm vergissberlin/apigee-hybride-development:latest zsh
+docker run -it --rm --platform linux/amd64 vergissberlin/apigee-hybride-development:latest zsh
 ```
 
 ## Installation Guide

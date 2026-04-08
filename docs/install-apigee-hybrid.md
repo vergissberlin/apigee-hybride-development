@@ -26,10 +26,12 @@ All required tools are included in this Docker image:
 | `helm` | Kubernetes package manager for deploying Apigee Hybrid charts |
 | `httpie` | HTTP client for testing APIs |
 
+The published image is **`linux/amd64`**. On **Apple Silicon**, add **`--platform linux/amd64`** to `docker pull` / `docker run` (or use the repo **`justfile`**).
+
 Start the development container:
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --platform linux/amd64 \
   -v ~/.kube:/root/.kube \
   -v ~/.config/gcloud:/root/.config/gcloud \
   vergissberlin/apigee-hybride-development:latest
@@ -52,7 +54,7 @@ The script loads [scripts/misc-cli-utils.sh](../scripts/misc-cli-utils.sh) for c
 **`--from-env`** (optional): source a mounted env file from the first existing path among `/workspace/.env`, `./apigee-hybrid.env`, and `$HOME/.apigee-hybrid.env`. Use this when you prefer a file over many `-e` options:
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --platform linux/amd64 \
   -v ~/.kube:/root/.kube \
   -v ~/.config/gcloud:/root/.config/gcloud \
   -v "$(pwd)/apigee-hybrid.env:/workspace/.env:ro" \
@@ -63,7 +65,7 @@ docker run -it --rm \
 Example using **`--env-file`** and non-interactive mode (adjust variables to your project):
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --platform linux/amd64 \
   -v ~/.kube:/root/.kube \
   -v ~/.config/gcloud:/root/.config/gcloud \
   --env-file apigee-hybrid.env \
