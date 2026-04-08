@@ -20,6 +20,7 @@ Before opening a PR:
 
 ```bash
 docker build -t apigee-hybrid-development:local .
+docker run --rm -it apigee-hybrid-development:local zsh
 ```
 
 If you changed tooling versions or install steps, run the container briefly and sanity-check the relevant CLI (`gcloud`, `az`, `kubectl`, `helm`, etc.).

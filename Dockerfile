@@ -1,5 +1,8 @@
 FROM vergissberlin/ubuntu-development:24.04
 
+# Helm 3.x binary from get.helm.sh (pinned). Avoids apt/baltocdn HTTP/2 PROTOCOL_ERROR in some CI/Docker builds.
+ARG HELM_VERSION=v3.20.1
+
 LABEL maintainer="vergissberlin" \
       description="Docker image for Apigee Hybrid development on Azure AKS" \
       version="1.0.0"
@@ -49,14 +52,13 @@ RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key \
     && apt-get install -y --no-install-recommends kubectl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Helm
-RUN curl -fsSL https://baltocdn.com/helm/signing.asc \
-        | gpg --dearmor -o /usr/share/keyrings/helm.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" \
-        > /etc/apt/sources.list.d/helm-stable-debian.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends helm \
-    && rm -rf /var/lib/apt/lists/*
+# Install Helm (official tarball; more reliable than baltocdn apt repo under flaky HTTP/2)
+RUN curl -fsSL --http1.1 "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o /tmp/helm.tgz \
+    && tar -C /tmp -xzf /tmp/helm.tgz \
+    && mv /tmp/linux-amd64/helm /usr/local/bin/helm \
+    && chmod +x /usr/local/bin/helm \
+    && rm -rf /tmp/linux-amd64 /tmp/helm.tgz \
+    && helm version
 
 # Install HTTPie via pipx (isolated environment, avoids system package conflicts)
 RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install httpie
