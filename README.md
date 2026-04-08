@@ -46,7 +46,11 @@ On **Apple Silicon** (arm64), the image matches your machine. To match **CI** (`
 docker build --platform linux/amd64 -t apigee-hybrid-development:local .
 ```
 
-The default shell in the image is **bash** (`CMD ["/bin/bash"]`). Install `zsh` in the Dockerfile if you need it, or run `docker run ... /bin/bash`.
+The default shell is **bash** (`CMD ["/bin/bash"]`). **zsh** is also installed; **`APIGEE_HELM_CHARTS_HOME`** is set in the environment and in `/root/.zshrc` to `/workspace/apigee-hybrid/helm-charts` (see [Download charts](https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts)). Example:
+
+```bash
+docker run -it --rm vergissberlin/apigee-hybrid-development:latest zsh
+```
 
 ## Installation Guide
 

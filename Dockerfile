@@ -6,11 +6,19 @@ ARG TARGETARCH
 # Helm 3.x binary from get.helm.sh (pinned). Avoids apt/baltocdn HTTP/2 PROTOCOL_ERROR in some CI/Docker builds.
 ARG HELM_VERSION=v3.20.1
 
+# Apigee Hybrid Helm charts (OCI). Override: docker build --build-arg CHART_VERSION=...
+ARG CHART_VERSION=1.16.0-hotfix.1
+
 LABEL maintainer="vergissberlin" \
       description="Docker image for Apigee Hybrid development on Azure AKS" \
       version="1.0.0"
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Apigee Hybrid: chart download directory (see install-download-charts v1.16)
+ENV APIGEE_HELM_CHARTS_HOME=/workspace/apigee-hybrid/helm-charts \
+    CHART_REPO=oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts \
+    CHART_VERSION=${CHART_VERSION}
 
 # Install prerequisites
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -26,6 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     jq \
     git \
+    zsh \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Google Cloud CLI (gcloud)
@@ -60,18 +69,36 @@ RUN curl -fsSL --http1.1 "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGE
     && tar -C /tmp -xzf /tmp/helm.tgz \
     && mv "/tmp/linux-${TARGETARCH}/helm" /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm \
-    && rm -rf /tmp/linux-amd64 /tmp/helm.tgz \
+    && rm -rf "/tmp/linux-${TARGETARCH}" /tmp/helm.tgz \
     && helm version
 
 # Install HTTPie via pipx (isolated environment, avoids system package conflicts)
 RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install httpie
 
-# Apigee Hybrid charts are published as OCI in Google Artifact Registry (the legacy
-# storage.googleapis.com Helm index is no longer valid). Pull charts when installing,
-# per https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts
-# Example: helm pull oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts/apigee-operator --version <chart-version> --untar
+# Apigee Hybrid charts: OCI in Artifact Registry
+# https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts
 
-# Set working directory
 WORKDIR /workspace
+
+RUN mkdir -p apigee-hybrid/helm-charts
+
+WORKDIR /workspace/apigee-hybrid/helm-charts
+
+RUN { \
+    echo "export APIGEE_HELM_CHARTS_HOME=${APIGEE_HELM_CHARTS_HOME}"; \
+    echo "export CHART_REPO=${CHART_REPO}"; \
+    echo "export CHART_VERSION=${CHART_VERSION}"; \
+} > /root/.zshrc
+
+RUN set -eux; \
+    helm pull "${CHART_REPO}/apigee-operator" --version "${CHART_VERSION}" --untar; \
+    helm pull "${CHART_REPO}/apigee-datastore" --version "${CHART_VERSION}" --untar; \
+    helm pull "${CHART_REPO}/apigee-env" --version "${CHART_VERSION}" --untar; \
+    helm pull "${CHART_REPO}/apigee-ingress-manager" --version "${CHART_VERSION}" --untar; \
+    helm pull "${CHART_REPO}/apigee-org" --version "${CHART_VERSION}" --untar; \
+    helm pull "${CHART_REPO}/apigee-redis" --version "${CHART_VERSION}" --untar; \
+    helm pull "${CHART_REPO}/apigee-telemetry" --version "${CHART_VERSION}" --untar; \
+    helm pull "${CHART_REPO}/apigee-virtualhost" --version "${CHART_VERSION}" --untar
+
 
 CMD ["/bin/bash"]
