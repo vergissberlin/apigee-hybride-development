@@ -46,7 +46,7 @@ On **Apple Silicon** (arm64), the image matches your machine. To match **CI** (`
 docker build --platform linux/amd64 -t apigee-hybrid-development:local .
 ```
 
-The default shell is **bash** (`CMD ["/bin/bash"]`). **zsh** is also installed; **`APIGEE_HELM_CHARTS_HOME`** is set in the environment and in `/root/.zshrc` to `/workspace/apigee-hybrid/helm-charts` (see [Download charts](https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts)). Example:
+The default shell is **bash** (`CMD ["/bin/bash"]`). **zsh** is also installed. **`APIGEE_HELM_CHARTS_HOME`**, **`CHART_REPO`**, and **`CHART_VERSION`** are set in the environment and in `/root/.zshrc` (see [Download charts](https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts)). The image build pulls the default Apigee Hybrid charts (operator, datastore, env, ingress-manager, org, redis, telemetry, virtualhost) from **`CHART_REPO`** at **`CHART_VERSION`** (override at build with `--build-arg CHART_VERSION=…`). Pulling from Google’s OCI registry may require **`gcloud auth application-default login`** (or equivalent) on the host building the image. Example:
 
 ```bash
 docker run -it --rm vergissberlin/apigee-hybrid-development:latest zsh
