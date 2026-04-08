@@ -47,6 +47,25 @@ CONTROL_PLANE_LOCATION="${CONTROL_PLANE_LOCATION:-}"
 MONETIZATION="${MONETIZATION:-n}"
 DRY_RUN_HELM="${DRY_RUN_HELM:-n}"
 
+# Optional: docker run -e / --env-file (see --help). With APIGEE_SETUP_NONINTERACTIVE=1, prompts are skipped;
+# every required value must be set in the environment (or prompt defaults apply where defined).
+AZURE_SUBSCRIPTION="${AZURE_SUBSCRIPTION:-}"
+TLS_DOMAIN="${TLS_DOMAIN:-}"
+TLS_ENV_GROUP="${TLS_ENV_GROUP:-}"
+INSTANCE_ID="${INSTANCE_ID:-}"
+ANALYTICS_REGION="${ANALYTICS_REGION:-}"
+INGRESS_GATEWAY_NAME="${INGRESS_GATEWAY_NAME:-}"
+VIRTUALHOST_NAME="${VIRTUALHOST_NAME:-}"
+APIGEE_ENVIRONMENT_NAME="${APIGEE_ENVIRONMENT_NAME:-}"
+SSL_CERT_PATH="${SSL_CERT_PATH:-}"
+SSL_KEY_PATH="${SSL_KEY_PATH:-}"
+CASSANDRA_HOST_NETWORK="${CASSANDRA_HOST_NETWORK:-}"
+GSA_EMAIL="${GSA_EMAIL:-}"
+AUTH_MODE_CHOICE="${AUTH_MODE_CHOICE:-}"
+OVERRIDES_YAML_PATH="${OVERRIDES_YAML_PATH:-}"
+OVERRIDES_WIZARD_MODE="${OVERRIDES_WIZARD_MODE:-}"
+HELM_ENV_RELEASE="${HELM_ENV_RELEASE:-}"
+
 load_optional_env() {
   local f
   for f in /workspace/.env ./apigee-hybrid.env "${HOME}/.apigee-hybrid.env"; do
@@ -85,9 +104,8 @@ step_prerequisites() {
   fi
 
   if confirm "Set Azure subscription (az account set --subscription)?" "n"; then
-    local sub=""
-    read -r -p "Subscription ID or name: " sub || true
-    [[ -n "$sub" ]] && run_cmd az account set --subscription "$sub"
+    prompt AZURE_SUBSCRIPTION "" "Azure subscription ID or name"
+    [[ -n "${AZURE_SUBSCRIPTION:-}" ]] && run_cmd az account set --subscription "$AZURE_SUBSCRIPTION"
   fi
 
   prompt AZURE_RESOURCE_GROUP "my-aks-rg" "Azure resource group of the AKS cluster"
@@ -111,7 +129,11 @@ step_optional_chart_pull() {
   section "Step 2 (optional) — Re-download Helm charts (OCI)" "" cyan
   info "Image build already pulled charts into: $APIGEE_HELM_CHARTS_HOME"
   if [[ -z "$CHART_VERSION" ]]; then
-    read -r -p "CHART_VERSION to pull (empty = skip re-pull): " CHART_VERSION || true
+    if [[ "${APIGEE_SETUP_NONINTERACTIVE:-0}" == "1" ]]; then
+      info "CHART_VERSION unset — skipping optional chart re-pull."
+    else
+      read -r -p "CHART_VERSION to pull (empty = skip re-pull): " CHART_VERSION || true
+    fi
   fi
   if [[ -z "${CHART_VERSION:-}" ]]; then
     warn "Skipping chart pull."
@@ -159,7 +181,7 @@ step_create_service_accounts() {
   section "Step 4 — Create Google service accounts (create-service-account)" "" cyan
   ensure_create_sa_tool
   info "Choose installation profile (see Apigee docs: production vs non-production)."
-  read -r -p "Profile [non-prod|prod] [non-prod]: " INSTALL_PROFILE || true
+  prompt INSTALL_PROFILE "non-prod" "non-prod or prod"
   INSTALL_PROFILE="${INSTALL_PROFILE:-non-prod}"
   if [[ "$INSTALL_PROFILE" != "prod" && "$INSTALL_PROFILE" != "non-prod" ]]; then
     warn "Invalid profile; defaulting to non-prod."
@@ -169,23 +191,27 @@ step_create_service_accounts() {
   prompt PROJECT_ID "$PROJECT_ID" "GCP project ID"
 
   echo ""
-  info "Authentication method for hybrid (Step 5 preview — choose how keys are consumed):"
-  bullet_list \
-    "1) Kubernetes Secrets (recommended for guided install)" \
-    "2) JSON key files inside each Helm chart directory" \
-    "3) Vault (manual — see official docs only)" \
-    "4) Workload Identity Federation for GKE (not applicable on AKS — documentation only)" \
-    "5) Workload Identity Federation on other platforms (AKS OIDC — advanced)"
-  read -r -p "Choice [1]: " _am || true
-  _am="${_am:-1}"
-  case "$_am" in
-    1) AUTH_MODE="secrets" ;;
-    2) AUTH_MODE="json" ;;
-    3) AUTH_MODE="vault" ;;
-    4) AUTH_MODE="wif_gke" ;;
-    5) AUTH_MODE="wif_other" ;;
-    *) AUTH_MODE="secrets" ;;
-  esac
+  if [[ -z "${AUTH_MODE:-}" ]]; then
+    info "Authentication method for hybrid (Step 5 preview — choose how keys are consumed):"
+    bullet_list \
+      "1) Kubernetes Secrets (recommended for guided install)" \
+      "2) JSON key files inside each Helm chart directory" \
+      "3) Vault (manual — see official docs only)" \
+      "4) Workload Identity Federation for GKE (not applicable on AKS — documentation only)" \
+      "5) Workload Identity Federation on other platforms (AKS OIDC — advanced)"
+    prompt AUTH_MODE_CHOICE "1" "1=secrets 2=json 3=vault 4=wif_gke 5=wif_other"
+    _am="${AUTH_MODE_CHOICE:-1}"
+    case "$_am" in
+      1) AUTH_MODE="secrets" ;;
+      2) AUTH_MODE="json" ;;
+      3) AUTH_MODE="vault" ;;
+      4) AUTH_MODE="wif_gke" ;;
+      5) AUTH_MODE="wif_other" ;;
+      *) AUTH_MODE="secrets" ;;
+    esac
+  else
+    info "AUTH_MODE=$AUTH_MODE (from environment) — skipping menu."
+  fi
 
   if [[ "$AUTH_MODE" == "vault" ]]; then
     warn "Vault path is not automated here. Complete Step 4–5 using:"
@@ -322,36 +348,32 @@ step_tls_certs() {
   if ! command -v openssl >/dev/null 2>&1; then
     die "openssl not found. Install openssl in the image or on the host."
   fi
-  local domain env_group
-  read -r -p "DOMAIN (hostname for environment group, CN=): " domain || true
-  read -r -p "ENV_GROUP name (used in cert filenames): " env_group || true
-  if [[ -z "$domain" || -z "$env_group" ]]; then
-    error "DOMAIN and ENV_GROUP are required."
+  prompt TLS_DOMAIN "" "hostname for environment group (CN=)"
+  prompt TLS_ENV_GROUP "" "name used in cert filenames (keystore_…)"
+  if [[ -z "$TLS_DOMAIN" || -z "$TLS_ENV_GROUP" ]]; then
+    error "TLS_DOMAIN and TLS_ENV_GROUP are required."
     return 1
   fi
   local cert_dir="$APIGEE_HELM_CHARTS_HOME/apigee-virtualhost/certs"
   run_cmd mkdir -p "$cert_dir"
   run_cmd openssl req -nodes -new -x509 \
-    -keyout "$cert_dir/keystore_${env_group}.key" \
-    -out "$cert_dir/keystore_${env_group}.pem" \
-    -subj "/CN=${domain}" -days 3650
+    -keyout "$cert_dir/keystore_${TLS_ENV_GROUP}.key" \
+    -out "$cert_dir/keystore_${TLS_ENV_GROUP}.pem" \
+    -subj "/CN=${TLS_DOMAIN}" -days 3650
   run_cmd ls -la "$cert_dir"
   info "Use these paths in overrides.yaml virtualhosts (sslCertPath / sslKeyPath)."
 }
 
 write_overrides_nonprod_secrets() {
   local out="$1"
-  local instance_id analytics_region ingress_name env_group_name env_name
-  read -r -p "instanceID (unique per cluster): " instance_id
-  read -r -p "gcp.region (Analytics region): " analytics_region
-  read -r -p "ingressGateways[0].name (max 17 chars, e.g. ingw1): " ingress_name
-  read -r -p "virtualhosts[0].name (environment group name): " env_group_name
-  read -r -p "envs[0].name (Apigee environment name): " env_name
-  local cert_pem cert_key cassandra_host_net
-  read -r -p "sslCertPath (e.g. apigee-virtualhost/certs/keystore_${env_group_name}.pem): " cert_pem
-  read -r -p "sslKeyPath (e.g. apigee-virtualhost/certs/keystore_${env_group_name}.key): " cert_key
-  read -r -p "cassandra.hostNetwork [true|false] (AKS multi-region/no cross-cluster pod comm often true): " cassandra_host_net
-  [[ -z "$cassandra_host_net" ]] && cassandra_host_net="false"
+  prompt INSTANCE_ID "" "unique per cluster (instanceID)"
+  prompt ANALYTICS_REGION "" "gcp.region / Analytics region"
+  prompt INGRESS_GATEWAY_NAME "ingw1" "ingressGateways[0].name (max 17 chars)"
+  prompt VIRTUALHOST_NAME "" "virtualhosts[0].name (environment group)"
+  prompt APIGEE_ENVIRONMENT_NAME "" "envs[0].name (Apigee environment)"
+  prompt SSL_CERT_PATH "" "sslCertPath (e.g. apigee-virtualhost/certs/keystore_${VIRTUALHOST_NAME}.pem)"
+  prompt SSL_KEY_PATH "" "sslKeyPath (e.g. apigee-virtualhost/certs/keystore_${VIRTUALHOST_NAME}.key)"
+  prompt CASSANDRA_HOST_NETWORK "false" "cassandra.hostNetwork true or false"
 
   local contract_line=""
   if [[ "$DATA_RESIDENCY" == "y" ]]; then
@@ -363,12 +385,12 @@ write_overrides_nonprod_secrets() {
 # Generated by apigee-hybrid-aks-setup.sh — review against official docs:
 # https://cloud.google.com/apigee/docs/hybrid/v1.16/install-create-overrides
 
-instanceID: "${instance_id}"
+instanceID: "${INSTANCE_ID}"
 namespace: ${APIGEE_NAMESPACE}
 
 gcp:
   projectID: ${PROJECT_ID}
-  region: ${analytics_region}
+  region: ${ANALYTICS_REGION}
 
 k8sCluster:
   name: ${CLUSTER_NAME}
@@ -380,13 +402,13 @@ enhanceProxyLimits: true
 ${contract_line}
 
 envs:
-  - name: ${env_name}
+  - name: ${APIGEE_ENVIRONMENT_NAME}
     serviceAccountSecretRefs:
       synchronizer: apigee-non-prod-svc-account
       runtime: apigee-non-prod-svc-account
 
 cassandra:
-  hostNetwork: ${cassandra_host_net}
+  hostNetwork: ${CASSANDRA_HOST_NETWORK}
   replicaCount: 3
   storage:
     storageSize: 100Gi
@@ -398,17 +420,17 @@ cassandra:
   heapNewSize: 400M
 
 ingressGateways:
-  - name: ${ingress_name}
+  - name: ${INGRESS_GATEWAY_NAME}
     replicaCountMin: 1
     replicaCountMax: 3
 
 virtualhosts:
-  - name: ${env_group_name}
+  - name: ${VIRTUALHOST_NAME}
     selector:
       app: apigee-ingressgateway
-      ingress_name: ${ingress_name}
-    sslCertPath: ${cert_pem}
-    sslKeyPath: ${cert_key}
+      ingress_name: ${INGRESS_GATEWAY_NAME}
+    sslCertPath: ${SSL_CERT_PATH}
+    sslKeyPath: ${SSL_KEY_PATH}
 
 guardrails:
   serviceAccountRef: apigee-non-prod-svc-account
@@ -427,17 +449,14 @@ EOF
 
 write_overrides_prod_secrets() {
   local out="$1"
-  local instance_id analytics_region ingress_name env_group_name env_name
-  read -r -p "instanceID: " instance_id
-  read -r -p "gcp.region (Analytics region): " analytics_region
-  read -r -p "ingressGateways[0].name: " ingress_name
-  read -r -p "virtualhosts[0].name (environment group): " env_group_name
-  read -r -p "envs[0].name (environment): " env_name
-  local cert_pem cert_key cassandra_host_net
-  read -r -p "sslCertPath: " cert_pem
-  read -r -p "sslKeyPath: " cert_key
-  read -r -p "cassandra.hostNetwork [true|false]: " cassandra_host_net
-  [[ -z "$cassandra_host_net" ]] && cassandra_host_net="false"
+  prompt INSTANCE_ID "" "unique per cluster (instanceID)"
+  prompt ANALYTICS_REGION "" "gcp.region / Analytics region"
+  prompt INGRESS_GATEWAY_NAME "ingw1" "ingressGateways[0].name"
+  prompt VIRTUALHOST_NAME "" "virtualhosts[0].name (environment group)"
+  prompt APIGEE_ENVIRONMENT_NAME "" "envs[0].name (Apigee environment)"
+  prompt SSL_CERT_PATH "" "sslCertPath"
+  prompt SSL_KEY_PATH "" "sslKeyPath"
+  prompt CASSANDRA_HOST_NETWORK "false" "cassandra.hostNetwork true or false"
 
   local contract_line=""
   if [[ "$DATA_RESIDENCY" == "y" ]]; then
@@ -454,12 +473,12 @@ write_overrides_prod_secrets() {
   cat >"$out" <<EOF
 # Generated by apigee-hybrid-aks-setup.sh — review for production sizing and policies.
 
-instanceID: "${instance_id}"
+instanceID: "${INSTANCE_ID}"
 namespace: ${APIGEE_NAMESPACE}
 
 gcp:
   projectID: ${PROJECT_ID}
-  region: ${analytics_region}
+  region: ${ANALYTICS_REGION}
 
 k8sCluster:
   name: ${CLUSTER_NAME}
@@ -471,13 +490,13 @@ enhanceProxyLimits: true
 ${contract_line}
 
 envs:
-  - name: ${env_name}
+  - name: ${APIGEE_ENVIRONMENT_NAME}
     serviceAccountSecretRefs:
       synchronizer: apigee-synchronizer-svc-account
       runtime: apigee-runtime-svc-account
 
 cassandra:
-  hostNetwork: ${cassandra_host_net}
+  hostNetwork: ${CASSANDRA_HOST_NETWORK}
   replicaCount: 3
   storage:
     storageSize: 500Gi
@@ -489,17 +508,17 @@ cassandra:
   heapNewSize: 1200M
 
 ingressGateways:
-  - name: ${ingress_name}
+  - name: ${INGRESS_GATEWAY_NAME}
     replicaCountMin: 2
     replicaCountMax: 10
 
 virtualhosts:
-  - name: ${env_group_name}
+  - name: ${VIRTUALHOST_NAME}
     selector:
       app: apigee-ingressgateway
-      ingress_name: ${ingress_name}
-    sslCertPath: ${cert_pem}
-    sslKeyPath: ${cert_key}
+      ingress_name: ${INGRESS_GATEWAY_NAME}
+    sslCertPath: ${SSL_CERT_PATH}
+    sslKeyPath: ${SSL_KEY_PATH}
 
 guardrails:
   serviceAccountRef: apigee-guardrails-svc-account
@@ -520,30 +539,28 @@ EOF
 
 write_overrides_wif_nonprod() {
   local out="$1"
-  local gsa_email instance_id analytics_region ingress_name env_group_name env_name cert_pem cert_key cassandra_host_net
-  read -r -p "gcp.workloadIdentity.gsa (apigee-non-prod@PROJECT.iam.gserviceaccount.com): " gsa_email
-  read -r -p "instanceID: " instance_id
-  read -r -p "gcp.region (Analytics): " analytics_region
-  read -r -p "ingressGateways[0].name: " ingress_name
-  read -r -p "virtualhosts[0].name: " env_group_name
-  read -r -p "envs[0].name: " env_name
-  read -r -p "sslCertPath: " cert_pem
-  read -r -p "sslKeyPath: " cert_key
-  read -r -p "cassandra.hostNetwork [true|false]: " cassandra_host_net
-  [[ -z "$cassandra_host_net" ]] && cassandra_host_net="false"
+  prompt GSA_EMAIL "" "gcp.workloadIdentity.gsa (e.g. apigee-non-prod@PROJECT.iam.gserviceaccount.com)"
+  prompt INSTANCE_ID "" "unique per cluster (instanceID)"
+  prompt ANALYTICS_REGION "" "gcp.region (Analytics)"
+  prompt INGRESS_GATEWAY_NAME "ingw1" "ingressGateways[0].name"
+  prompt VIRTUALHOST_NAME "" "virtualhosts[0].name"
+  prompt APIGEE_ENVIRONMENT_NAME "" "envs[0].name"
+  prompt SSL_CERT_PATH "" "sslCertPath"
+  prompt SSL_KEY_PATH "" "sslKeyPath"
+  prompt CASSANDRA_HOST_NETWORK "false" "cassandra.hostNetwork true or false"
 
   cat >"$out" <<EOF
 # WIF on other platforms — fill workloadIdentity details per docs (pool/provider IDs, etc.)
 
-instanceID: "${instance_id}"
+instanceID: "${INSTANCE_ID}"
 namespace: ${APIGEE_NAMESPACE}
 
 gcp:
   projectID: ${PROJECT_ID}
-  region: ${analytics_region}
+  region: ${ANALYTICS_REGION}
   workloadIdentity:
     enabled: true
-    gsa: "${gsa_email}"
+    gsa: "${GSA_EMAIL}"
 
 k8sCluster:
   name: ${CLUSTER_NAME}
@@ -554,10 +571,10 @@ org: ${ORG_NAME}
 enhanceProxyLimits: true
 
 envs:
-  - name: ${env_name}
+  - name: ${APIGEE_ENVIRONMENT_NAME}
 
 cassandra:
-  hostNetwork: ${cassandra_host_net}
+  hostNetwork: ${CASSANDRA_HOST_NETWORK}
   replicaCount: 3
   storage:
     storageSize: 100Gi
@@ -569,17 +586,17 @@ cassandra:
   heapNewSize: 400M
 
 ingressGateways:
-  - name: ${ingress_name}
+  - name: ${INGRESS_GATEWAY_NAME}
     replicaCountMin: 1
     replicaCountMax: 3
 
 virtualhosts:
-  - name: ${env_group_name}
+  - name: ${VIRTUALHOST_NAME}
     selector:
       app: apigee-ingressgateway
-      ingress_name: ${ingress_name}
-    sslCertPath: ${cert_pem}
-    sslKeyPath: ${cert_key}
+      ingress_name: ${INGRESS_GATEWAY_NAME}
+    sslCertPath: ${SSL_CERT_PATH}
+    sslKeyPath: ${SSL_KEY_PATH}
 EOF
 }
 
@@ -623,14 +640,14 @@ step_overrides() {
     DATA_RESIDENCY="n"
   fi
 
-  local out="$APIGEE_HELM_CHARTS_HOME/overrides.yaml"
-  info "Default output path: $out"
-  read -r -p "Press Enter to accept or type alternate path: " _op || true
-  [[ -n "${_op:-}" ]] && out="$_op"
+  local _default_out="${OVERRIDES_YAML_PATH:-$APIGEE_HELM_CHARTS_HOME/overrides.yaml}"
+  info "Default output path: $_default_out"
+  prompt OVERRIDES_YAML_PATH "$_default_out" "overrides.yaml path (Enter to accept default)"
+  local out="$OVERRIDES_YAML_PATH"
 
   info "Generate minimal overrides via wizard (g), open \$EDITOR (e), or skip (s)?"
-  read -r -p "[g/e/s] [g]: " _mode || true
-  _mode="${_mode:-g}"
+  prompt OVERRIDES_WIZARD_MODE "g" "g=wizard e=editor s=skip"
+  local _mode="${OVERRIDES_WIZARD_MODE:-g}"
   if [[ "$_mode" == "s" ]]; then
     warn "Skipping file generation."
     return 0
@@ -792,10 +809,10 @@ step_helm_install() {
     run_cmd helm upgrade "$ORG_NAME" apigee-org/ --install --namespace "$APIGEE_NAMESPACE" --atomic -f "$overrides" "${extra[@]}"
     run_cmd kubectl -n "$APIGEE_NAMESPACE" get apigeeorg || true
 
-    local env_name env_release
-    read -r -p "Apigee environment name for apigee-env chart: " env_name
-    read -r -p "Helm release name for apigee-env [same as env]: " env_release
-    env_release="${env_release:-$env_name}"
+    prompt APIGEE_ENVIRONMENT_NAME "" "Apigee environment name for apigee-env chart"
+    prompt HELM_ENV_RELEASE "${APIGEE_ENVIRONMENT_NAME}" "Helm release name for apigee-env"
+    local env_name="$APIGEE_ENVIRONMENT_NAME"
+    local env_release="${HELM_ENV_RELEASE:-$APIGEE_ENVIRONMENT_NAME}"
     run_cmd helm upgrade "$env_release" apigee-env/ --install --namespace "$APIGEE_NAMESPACE" --atomic --set "env=${env_name}" -f "$overrides" "${extra[@]}"
     run_cmd kubectl -n "$APIGEE_NAMESPACE" get apigeeenvironment || true
   )
@@ -811,9 +828,26 @@ Usage:
 Steps:
   all | prereq | charts | namespace | serviceaccounts | secrets | tls | overrides | controlplane | certmanager | crds | helm
 
-Environment (optional):
-  APIGEE_HELM_CHARTS_HOME  Default: /workspace/apigee-hybrid/helm-charts
-  Optional file: /workspace/.env, ./apigee-hybrid.env — sourced when --from-env is passed
+Docker / environment:
+  Pass configuration with docker run -e KEY=value and/or --env-file FILE. Those variables are
+  visible to this script without any flag.
+
+  --from-env   Source the first existing file: /workspace/.env, ./apigee-hybrid.env, ~/.apigee-hybrid.env
+               (in addition to variables already injected by Docker).
+
+  APIGEE_SETUP_NONINTERACTIVE=1   Skip interactive prompts: use env values or prompt defaults; confirm()
+                                    uses each prompt's default (y/n). Required values must be set or
+                                    defaulted — missing values exit with an error.
+
+Common variables (see docs/setup-script-environment.md for the full list):
+  APIGEE_HELM_CHARTS_HOME   Default: /workspace/apigee-hybrid/helm-charts
+  CHART_REPO, CHART_VERSION, CERT_MANAGER_VERSION
+  APIGEE_NAMESPACE, PROJECT_ID, ORG_NAME, CLUSTER_NAME, CLUSTER_LOCATION
+  AZURE_RESOURCE_GROUP, AZURE_SUBSCRIPTION, INSTALL_PROFILE, AUTH_MODE, AUTH_MODE_CHOICE
+  TLS_DOMAIN, TLS_ENV_GROUP
+  INSTANCE_ID, ANALYTICS_REGION, INGRESS_GATEWAY_NAME, VIRTUALHOST_NAME, APIGEE_ENVIRONMENT_NAME
+  SSL_CERT_PATH, SSL_KEY_PATH, CASSANDRA_HOST_NETWORK, GSA_EMAIL
+  OVERRIDES_YAML_PATH, OVERRIDES_WIZARD_MODE, HELM_ENV_RELEASE
 
 EOF
 }

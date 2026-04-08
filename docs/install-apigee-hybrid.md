@@ -47,7 +47,9 @@ bash /workspace/scripts/apigee-hybrid-aks-setup.sh
 
 The script loads [scripts/misc-cli-utils.sh](../scripts/misc-cli-utils.sh) for consistent terminal output (section headers, prompts, and command echoing).
 
-Optional: mount a small env file and load it with `--from-env` (checked paths: `/workspace/.env`, `./apigee-hybrid.env`):
+**Environment variables:** you can pass configuration with `docker run -e KEY=value`, `docker run --env-file .env`, or both. Injected variables are available to the script **without** any extra flag. The full list and non-interactive behaviour are documented in [setup-script-environment.md](setup-script-environment.md).
+
+**`--from-env`** (optional): source a mounted env file from the first existing path among `/workspace/.env`, `./apigee-hybrid.env`, and `$HOME/.apigee-hybrid.env`. Use this when you prefer a file over many `-e` options:
 
 ```bash
 docker run -it --rm \
@@ -56,6 +58,18 @@ docker run -it --rm \
   -v "$(pwd)/apigee-hybrid.env:/workspace/.env:ro" \
   vergissberlin/apigee-hybride-development:latest \
   bash /workspace/scripts/apigee-hybrid-aks-setup.sh --from-env
+```
+
+Example using **`--env-file`** and non-interactive mode (adjust variables to your project):
+
+```bash
+docker run -it --rm \
+  -v ~/.kube:/root/.kube \
+  -v ~/.config/gcloud:/root/.config/gcloud \
+  --env-file apigee-hybrid.env \
+  -e APIGEE_SETUP_NONINTERACTIVE=1 \
+  vergissberlin/apigee-hybride-development:latest \
+  apigee-hybrid-aks-setup prereq
 ```
 
 Helm charts are **already downloaded** during the image build (see [Download Apigee Hybrid Charts](https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts)); the script treats step 2 as done and can optionally re-pull a different `CHART_VERSION` if you set it.

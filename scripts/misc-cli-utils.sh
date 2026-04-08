@@ -225,6 +225,11 @@ countdown_progress() {
 
 # --- Interactive helpers (sourced by setup / automation scripts) ---
 
+# True when APIGEE_SETUP_NONINTERACTIVE=1 (skip reads in prompt/confirm; used by apigee-hybrid-aks-setup.sh).
+_apigee_setup_noninteractive() {
+  [[ "${APIGEE_SETUP_NONINTERACTIVE:-0}" == "1" ]]
+}
+
 # Section banner — thin wrapper around header()
 # Usage: section "Title" ["description"] [color]
 section() {
@@ -236,6 +241,7 @@ section() {
 
 # Prompt for a variable name with optional default and hint (bash indirect assignment).
 # Usage: prompt VAR_NAME [default] [hint]
+# When APIGEE_SETUP_NONINTERACTIVE=1: no TTY read; uses existing value or default; dies if still empty.
 prompt() {
   local var_name="$1"
   local default="${2:-}"
@@ -243,6 +249,13 @@ prompt() {
   local current="${!var_name-}"
   local use="${current:-$default}"
   local input
+  if _apigee_setup_noninteractive; then
+    if [[ -n "$use" ]]; then
+      printf -v "$var_name" '%s' "$use"
+      return 0
+    fi
+    die "APIGEE_SETUP_NONINTERACTIVE: required variable ${var_name} is unset (no value and no default)."
+  fi
   if [[ -n "$hint" ]]; then
     read -r -p "${var_name} [${use}] (${hint}): " input || true
   else
@@ -259,6 +272,10 @@ prompt() {
 confirm() {
   local msg="$1"
   local default="${2:-n}"
+  if _apigee_setup_noninteractive; then
+    [[ "$default" == "y" ]]
+    return $?
+  fi
   local yn_hint="y/N"
   [[ "$default" == "y" ]] && yn_hint="Y/n"
   read -r -p "$msg [$yn_hint]: " reply || true

@@ -25,6 +25,8 @@ docker run -it --rm \
   vergissberlin/apigee-hybride-development:latest
 ```
 
+You can pass setup configuration with **`docker run -e KEY=value`**, **`--env-file .env`**, or a mounted file plus **`apigee-hybrid-aks-setup --from-env`** (see [docs/setup-script-environment.md](docs/setup-script-environment.md)). Set **`APIGEE_SETUP_NONINTERACTIVE=1`** to run without interactive prompts when all required variables are supplied.
+
 Maintainers: where images are published, CI triggers, and registry setup are documented in [CONTRIBUTING.md — Releases and CI](CONTRIBUTING.md#releases-and-ci).
 
 ## Build the Image Locally
@@ -51,7 +53,7 @@ For a full step-by-step guide to install Apigee Hybrid v1.16 on Azure AKS, see:
 
 📖 **[docs/install-apigee-hybrid.md](docs/install-apigee-hybrid.md)**
 
-The container image includes an **interactive setup script** at `/workspace/scripts/apigee-hybrid-aks-setup.sh` (also [scripts/apigee-hybrid-aks-setup.sh](scripts/apigee-hybrid-aks-setup.sh) in this repository). The same script is on `PATH` as `apigee-hybrid-aks-setup` (symlink in `/usr/bin`). It sources shared CLI helpers from [scripts/misc-cli-utils.sh](scripts/misc-cli-utils.sh) (colored banners, `info`/`warn`/`error`, `prompt`/`confirm`, `run_cmd`, etc.). It walks through Google’s official hybrid install steps **3–11** (namespace, service accounts, authentication, TLS, `overrides.yaml`, control-plane API access, cert-manager, CRDs, Helm installs), prompts for variables, skips chart download when charts are already baked into the image, and highlights AKS-specific commands (for example `az aks get-credentials` and OIDC for Workload Identity Federation). Run `apigee-hybrid-aks-setup --help` (or `bash /workspace/scripts/apigee-hybrid-aks-setup.sh --help`) inside the container for usage and step names.
+The container image includes an **interactive setup script** at `/workspace/scripts/apigee-hybrid-aks-setup.sh` (also [scripts/apigee-hybrid-aks-setup.sh](scripts/apigee-hybrid-aks-setup.sh) in this repository). The same script is on `PATH` as `apigee-hybrid-aks-setup` (symlink in `/usr/bin`). It sources shared CLI helpers from [scripts/misc-cli-utils.sh](scripts/misc-cli-utils.sh) (colored banners, `info`/`warn`/`error`, `prompt`/`confirm`, `run_cmd`, etc.). It walks through Google’s official hybrid install steps **3–11** (namespace, service accounts, authentication, TLS, `overrides.yaml`, control-plane API access, cert-manager, CRDs, Helm installs), prompts for variables (or uses environment variables / defaults — see [docs/setup-script-environment.md](docs/setup-script-environment.md)), skips chart download when charts are already baked into the image, and highlights AKS-specific commands (for example `az aks get-credentials` and OIDC for Workload Identity Federation). Run `apigee-hybrid-aks-setup --help` (or `bash /workspace/scripts/apigee-hybrid-aks-setup.sh --help`) inside the container for usage and step names.
 
 The guide covers:
 
