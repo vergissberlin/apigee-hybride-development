@@ -63,9 +63,10 @@ RUN curl -fsSL --http1.1 "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.t
 # Install HTTPie via pipx (isolated environment, avoids system package conflicts)
 RUN PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install httpie
 
-# Add Apigee Hybrid Helm chart repository
-RUN helm repo add apigee https://storage.googleapis.com/apigee-hybrid-charts \
-    && helm repo update
+# Apigee Hybrid charts are published as OCI in Google Artifact Registry (the legacy
+# storage.googleapis.com Helm index is no longer valid). Pull charts when installing,
+# per https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts
+# Example: helm pull oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts/apigee-operator --version <chart-version> --untar
 
 # Set working directory
 WORKDIR /workspace
