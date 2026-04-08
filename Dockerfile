@@ -90,13 +90,20 @@ RUN mkdir -p apigee-hybrid/helm-charts
 WORKDIR /workspace/apigee-hybrid/helm-charts
 
 # Append to /root/.zshrc — do not overwrite; base image (ubuntu-development) ships oh-my-zsh here.
+# bash is default CMD; append alias there too so `k` works in interactive bash.
 RUN { \
     echo ""; \
     echo "# Apigee Hybrid (this image)"; \
     echo "export APIGEE_HELM_CHARTS_HOME=${APIGEE_HELM_CHARTS_HOME}"; \
     echo "export CHART_REPO=${CHART_REPO}"; \
     echo "export CHART_VERSION=${CHART_VERSION}"; \
-} >> /root/.zshrc
+    echo "alias k=kubectl"; \
+} >> /root/.zshrc \
+    && { \
+    echo ""; \
+    echo "# Apigee Hybrid (this image)"; \
+    echo "alias k=kubectl"; \
+} >> /root/.bashrc
 
 RUN set -eux; \
     helm pull "${CHART_REPO}/apigee-operator" --version "${CHART_VERSION}" --untar; \
