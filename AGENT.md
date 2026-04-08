@@ -32,7 +32,7 @@ Guidance for automated and human agents working in this repository. Prefer **sma
 
 ## CI and releases
 
-- **Release Please** ([`.github/workflows/release-please.yml`](.github/workflows/release-please.yml)) manages release PRs from conventional commits. If Actions cannot open PRs, see [CONTRIBUTING.md](CONTRIBUTING.md) (repository settings or `RELEASE_PLEASE_TOKEN`).
+- **Release Please** ([`.github/workflows/release-please.yml`](.github/workflows/release-please.yml)) manages release PRs from conventional commits. If Actions cannot open PRs, see [CONTRIBUTING.md](CONTRIBUTING.md) (repository settings or `RELEASE_PLEASE_TOKEN`). Unparsed commits in logs are a changelog concern, not the same as the PR-permission error—details there.
 - **Docker publish** ([`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml)) pushes to Docker Hub and GHCR; image naming and secrets are documented in the workflow comments and [README.md](README.md).
 - When editing workflows, keep `permissions:` minimal and document new required **secrets** in comments or CONTRIBUTING.
 

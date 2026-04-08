@@ -39,11 +39,37 @@ Maintainers: if you cut release tags, keep them consistent with how registry tag
 
 ### Release Please: "not permitted to create or approve pull requests"
 
-That error is controlled outside the workflow file. Fix it in one of two ways:
+Release Please fails at the step where it opens or updates a pull request. The workflow already requests the right token scopes (`contents: write`, `pull-requests: write` in [`.github/workflows/release-please.yml`](.github/workflows/release-please.yml)), but **GitHub can still block PR creation** until you either enable the repository setting below or use a separate token.
 
-1. **Repository (or organization) settings** – allow Actions to open PRs: **Settings → Actions → General → Workflow permissions** — choose **Read and write permissions**, and enable **Allow GitHub Actions to create and approve pull requests**. If the option is grayed out, an org or enterprise admin must allow it at a higher level. See [GitHub Docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests).
+#### Fix (recommended): allow GitHub Actions to create PRs
 
-2. **Personal access token** – if policy forbids the above, add a repository secret **`RELEASE_PLEASE_TOKEN`** with a **classic** PAT that has the **`repo`** scope (so Release Please can push branches and open PRs). The workflow uses that token when the secret is set; otherwise it uses the default `GITHUB_TOKEN`.
+In the repository on GitHub:
+
+1. Go to **Settings → Actions → General → Workflow permissions**.
+2. Set **Workflow permissions** to **Read and write permissions**.
+3. Enable **Allow GitHub Actions to create and approve pull requests**.
+
+Re-run the workflow after saving. This matches the restriction enforced by GitHub’s pull request API. If the checkbox is missing or grayed out, an **organization or enterprise** admin must allow it at a higher level. See [GitHub Docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests).
+
+#### Fix (alternative): PAT when org policy blocks the checkbox
+
+If the setting cannot be enabled:
+
+1. Create a **classic** Personal Access Token with at least:
+   - **`repo`** (full control of private repositories), or
+   - **`public_repo`** if the repository is **public** and that scope is sufficient for your setup.
+2. Add it as a repository secret named **`RELEASE_PLEASE_TOKEN`**.
+3. The workflow uses that token when the secret is set:
+
+```yaml
+token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+```
+
+Re-run the job; Release Please will authenticate with the PAT and can create or update the release PR even when `GITHUB_TOKEN` is restricted.
+
+#### Log noise: "commit could not be parsed"
+
+Logs may show lines such as `commit could not be parsed` or parser errors like `unexpected token` while scanning history. Those mean **some commits are not valid Conventional Commits**; Release Please skips them for changelog purposes. They are **separate** from the PR-permission failure: the job can get far enough to create commits and still fail only when opening the PR. Prefer Conventional Commit messages on new work; cleaning up old history is optional and not required to fix the permission error.
 
 ## Documentation
 
