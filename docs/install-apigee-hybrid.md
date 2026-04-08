@@ -32,7 +32,7 @@ Start the development container:
 docker run -it --rm \
   -v ~/.kube:/root/.kube \
   -v ~/.config/gcloud:/root/.config/gcloud \
-  vergissberlin/apigee-hybrid-development:latest
+  vergissberlin/apigee-hybride-development:latest
 ```
 
 ---
@@ -54,7 +54,7 @@ docker run -it --rm \
   -v ~/.kube:/root/.kube \
   -v ~/.config/gcloud:/root/.config/gcloud \
   -v "$(pwd)/apigee-hybrid.env:/workspace/.env:ro" \
-  vergissberlin/apigee-hybrid-development:latest \
+  vergissberlin/apigee-hybride-development:latest \
   bash /workspace/scripts/apigee-hybrid-aks-setup.sh --from-env
 ```
 

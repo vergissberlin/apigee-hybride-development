@@ -19,8 +19,8 @@ Thanks for improving this project. This repository ships a **Docker image** for 
 Before opening a PR:
 
 ```bash
-docker build -t apigee-hybrid-development:local .
-docker run --rm -it apigee-hybrid-development:local zsh
+docker build -t apigee-hybride-development:local .
+docker run --rm -it apigee-hybride-development:local zsh
 ```
 
 If you changed tooling versions or install steps, run the container briefly and sanity-check the relevant CLI (`gcloud`, `az`, `kubectl`, `helm`, etc.).

@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKERHUB_IMAGE: vergissberlin/apigee-hybrid-development
+  DOCKERHUB_IMAGE: vergissberlin/apigee-hybride-development
 
 jobs:
   build-push:

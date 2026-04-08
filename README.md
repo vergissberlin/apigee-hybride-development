@@ -17,19 +17,19 @@ Based on [`vergissberlin/ubuntu-development:24.04`](https://hub.docker.com/r/ver
 ## Quick Start
 
 ```bash
-docker pull vergissberlin/apigee-hybrid-development:latest
+docker pull vergissberlin/apigee-hybride-development:latest
 
 docker run -it --rm \
   -v ~/.kube:/root/.kube \
   -v ~/.config/gcloud:/root/.config/gcloud \
-  vergissberlin/apigee-hybrid-development:latest
+  vergissberlin/apigee-hybride-development:latest
 ```
 
 ## CI / published images
 
 Pushes to `main`, version tags matching `v*`, and manual [workflow runs](.github/workflows/docker-publish.yml) build the image and push the same tags to:
 
-- **Docker Hub:** [`vergissberlin/apigee-hybrid-development`](https://hub.docker.com/r/vergissberlin/apigee-hybrid-development)
+- **Docker Hub:** [`vergissberlin/apigee-hybride-development`](https://hub.docker.com/r/vergissberlin/apigee-hybride-development)
 - **GitHub Container Registry:** `ghcr.io/<lowercase-owner>/<lowercase-repo>` (mirrors the GitHub repository name)
 
 **Repository setup:** add Actions secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`. GHCR uses `GITHUB_TOKEN` with `packages: write`. After the first GHCR push, adjust package visibility under the repository or organization **Packages** settings if you want anonymous `docker pull`.
@@ -37,19 +37,19 @@ Pushes to `main`, version tags matching `v*`, and manual [workflow runs](.github
 ## Build the Image Locally
 
 ```bash
-docker build -t apigee-hybrid-development:local .
+docker build -t apigee-hybride-development:local .
 ```
 
 On **Apple Silicon** (arm64), the image matches your machine. To match **CI** (`linux/amd64` only), use:
 
 ```bash
-docker build --platform linux/amd64 -t apigee-hybrid-development:local .
+docker build --platform linux/amd64 -t apigee-hybride-development:local .
 ```
 
 The default shell is **bash** (`CMD ["/bin/bash"]`). **zsh** is also installed. **`APIGEE_HELM_CHARTS_HOME`**, **`CHART_REPO`**, and **`CHART_VERSION`** are set in the environment and in `/root/.zshrc` (see [Download charts](https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts)). The image build pulls the default Apigee Hybrid charts (operator, datastore, env, ingress-manager, org, redis, telemetry, virtualhost) from **`CHART_REPO`** at **`CHART_VERSION`** (override at build with `--build-arg CHART_VERSION=…`). Pulling from Google’s OCI registry may require **`gcloud auth application-default login`** (or equivalent) on the host building the image. Example:
 
 ```bash
-docker run -it --rm vergissberlin/apigee-hybrid-development:latest zsh
+docker run -it --rm vergissberlin/apigee-hybride-development:latest zsh
 ```
 
 ## Installation Guide
