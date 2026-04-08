@@ -2,7 +2,7 @@
 
 Docker image for developing and configuring [Apigee Hybrid](https://cloud.google.com/apigee/docs/hybrid/v1.16/overview) on [Azure AKS](https://learn.microsoft.com/en-us/azure/aks/).
 
-Based on [`vergissberlin/ubuntu-development:24.04`](https://hub.docker.com/r/vergissberlin/ubuntu-development).
+This repository is part of the [vergissberlin organization on GitHub](https://github.com/vergissberlin?tab=repositories). The image is **based on** [`vergissberlin/ubuntu-development:24.04`](https://hub.docker.com/r/vergissberlin/ubuntu-development) ([`ubuntu-development` source](https://github.com/vergissberlin/ubuntu-development)), so it inherits that base image’s general development tooling and **adds** the cloud and Apigee-specific CLIs listed below.
 
 ## Included Tools
 
