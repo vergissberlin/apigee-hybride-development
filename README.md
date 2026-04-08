@@ -37,8 +37,16 @@ Pushes to `main`, version tags matching `v*`, and manual [workflow runs](.github
 ## Build the Image Locally
 
 ```bash
-docker build -t apigee-hybrid-development .
+docker build -t apigee-hybrid-development:local .
 ```
+
+On **Apple Silicon** (arm64), the image matches your machine. To match **CI** (`linux/amd64` only), use:
+
+```bash
+docker build --platform linux/amd64 -t apigee-hybrid-development:local .
+```
+
+The default shell in the image is **bash** (`CMD ["/bin/bash"]`). Install `zsh` in the Dockerfile if you need it, or run `docker run ... /bin/bash`.
 
 ## Installation Guide
 

@@ -1,5 +1,8 @@
 FROM vergissberlin/ubuntu-development:24.04
 
+# Set by Docker BuildKit to match the build platform (amd64 on CI, arm64 on Apple Silicon, …).
+ARG TARGETARCH
+
 # Helm 3.x binary from get.helm.sh (pinned). Avoids apt/baltocdn HTTP/2 PROTOCOL_ERROR in some CI/Docker builds.
 ARG HELM_VERSION=v3.20.1
 
@@ -37,7 +40,7 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
 # Install Azure CLI (az)
 RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
         | gpg --dearmor -o /usr/share/keyrings/microsoft.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" \
+    && echo "deb [arch=${TARGETARCH} signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" \
         > /etc/apt/sources.list.d/azure-cli.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends azure-cli \
@@ -53,9 +56,9 @@ RUN curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Helm (official tarball; more reliable than baltocdn apt repo under flaky HTTP/2)
-RUN curl -fsSL --http1.1 "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o /tmp/helm.tgz \
+RUN curl -fsSL --http1.1 "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" -o /tmp/helm.tgz \
     && tar -C /tmp -xzf /tmp/helm.tgz \
-    && mv /tmp/linux-amd64/helm /usr/local/bin/helm \
+    && mv "/tmp/linux-${TARGETARCH}/helm" /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm \
     && rm -rf /tmp/linux-amd64 /tmp/helm.tgz \
     && helm version
