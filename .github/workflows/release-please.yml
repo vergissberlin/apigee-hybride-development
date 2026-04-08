@@ -1,3 +1,12 @@
+# Release Please opens/updates a release PR. GitHub can block that for GITHUB_TOKEN unless
+# the repo allows it:
+#   Settings → Actions → General → Workflow permissions:
+#   - "Read and write permissions"
+#   - Enable "Allow GitHub Actions to create and approve pull requests"
+# If that checkbox is disabled (e.g. org policy), add a classic PAT with `repo` scope as the
+# repository secret RELEASE_PLEASE_TOKEN (used below when set).
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests
+
 name: release-please
 
 on:
@@ -19,3 +28,5 @@ jobs:
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
+          # Falls back to github.token when RELEASE_PLEASE_TOKEN is not configured.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}

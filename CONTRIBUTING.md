@@ -37,6 +37,14 @@ Common types used here: `feat`, `fix`, `docs`, `perf`, `refactor`, `ci`, `chore`
 
 Maintainers: if you cut release tags, keep them consistent with how registry tagging should work for consumers (see the workflow’s tag filters).
 
+### Release Please: "not permitted to create or approve pull requests"
+
+That error is controlled outside the workflow file. Fix it in one of two ways:
+
+1. **Repository (or organization) settings** – allow Actions to open PRs: **Settings → Actions → General → Workflow permissions** — choose **Read and write permissions**, and enable **Allow GitHub Actions to create and approve pull requests**. If the option is grayed out, an org or enterprise admin must allow it at a higher level. See [GitHub Docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#preventing-github-actions-from-creating-or-approving-pull-requests).
+
+2. **Personal access token** – if policy forbids the above, add a repository secret **`RELEASE_PLEASE_TOKEN`** with a **classic** PAT that has the **`repo`** scope (so Release Please can push branches and open PRs). The workflow uses that token when the secret is set; otherwise it uses the default `GITHUB_TOKEN`.
+
 ## Documentation
 
 - User-facing documentation in this repo is written in **English** (for example [README.md](README.md) and [docs/](docs/)).
