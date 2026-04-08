@@ -33,12 +33,22 @@ Common types used here: `feat`, `fix`, `docs`, `perf`, `refactor`, `ci`, `chore`
 
 ## Releases and CI
 
+### Docker image publishing
+
+The [docker-publish workflow](.github/workflows/docker-publish.yml) builds and pushes the image on pushes to `main`, on git tags matching `v*`, and via manual workflow dispatch. The same logical tag is published to:
+
+- **Docker Hub:** [`vergissberlin/apigee-hybride-development`](https://hub.docker.com/r/vergissberlin/apigee-hybride-development)
+- **GitHub Container Registry:** `ghcr.io/<lowercase-owner>/<lowercase-repo>` (mirrors the GitHub repository name)
+
+**Repository setup for maintainers:** add Actions secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`. GHCR uses `GITHUB_TOKEN` with `packages: write`. After the first GHCR push, adjust package visibility under the repository or organization **Packages** settings if you want anonymous `docker pull`.
+
+If you cut release tags, keep them consistent with how registry tagging should work for consumers (see the workflow’s tag filters).
+
+### Release Please
+
 - **Release Please** runs on pushes to `main` and opens/maintains release PRs using [`.release-please-config.json`](.release-please-config.json).
-- **Docker images** are built in [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml) on pushes to `main`, on git tags matching `v*`, and via manual workflow dispatch. Published images are described in [README.md](README.md) (Docker Hub and GHCR).
 
-Maintainers: if you cut release tags, keep them consistent with how registry tagging should work for consumers (see the workflow’s tag filters).
-
-### Release Please: "not permitted to create or approve pull requests"
+#### "Not permitted to create or approve pull requests"
 
 Release Please fails at the step where it opens or updates a pull request. The workflow already requests the right token scopes (`contents: write`, `pull-requests: write` in [`.github/workflows/release-please.yml`](.github/workflows/release-please.yml)), but **GitHub can still block PR creation** until you either enable the repository setting below or use a separate token.
 
