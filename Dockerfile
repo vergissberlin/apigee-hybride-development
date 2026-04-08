@@ -11,7 +11,7 @@ ARG CHART_VERSION=1.16.0-hotfix.1
 
 LABEL maintainer="vergissberlin" \
       description="Docker image for Apigee Hybrid development on Azure AKS" \
-      version="1.0.0"
+      version="1.3.1"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -34,6 +34,7 @@ RUN apt update && apt install -y --no-install-recommends \
     unzip \
     jq \
     git \
+    openssl \
     zsh \
     && rm -rf /var/lib/apt/lists/*
 
