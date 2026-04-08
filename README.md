@@ -25,6 +25,15 @@ docker run -it --rm \
   vergissberlin/apigee-hybrid-development:latest
 ```
 
+## CI / published images
+
+Pushes to `main`, version tags matching `v*`, and manual [workflow runs](.github/workflows/docker-publish.yml) build the image and push the same tags to:
+
+- **Docker Hub:** [`vergissberlin/apigee-hybrid-development`](https://hub.docker.com/r/vergissberlin/apigee-hybrid-development)
+- **GitHub Container Registry:** `ghcr.io/<lowercase-owner>/<lowercase-repo>` (mirrors the GitHub repository name)
+
+**Repository setup:** add Actions secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`. GHCR uses `GITHUB_TOKEN` with `packages: write`. After the first GHCR push, adjust package visibility under the repository or organization **Packages** settings if you want anonymous `docker pull`.
+
 ## Build the Image Locally
 
 ```bash
