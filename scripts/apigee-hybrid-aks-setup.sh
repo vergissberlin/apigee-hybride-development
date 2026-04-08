@@ -6,7 +6,21 @@
 
 set -euo pipefail
 
-_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve real script directory (follows symlinks, e.g. /usr/bin/apigee-hybrid-aks-setup → …/scripts)
+_script_dir() {
+  local src="${BASH_SOURCE[0]}"
+  while [[ -L "$src" ]]; do
+    local dir
+    dir="$(cd -P "$(dirname "$src")" && pwd)"
+    local target
+    target="$(readlink "$src")"
+    [[ "$target" == /* ]] || target="${dir}/${target}"
+    src="$target"
+  done
+  cd -P "$(dirname "$src")" && pwd
+}
+_SCRIPT_DIR="$(_script_dir)"
+unset -f _script_dir 2>/dev/null || true
 # shellcheck source=scripts/misc-cli-utils.sh
 source "${_SCRIPT_DIR}/misc-cli-utils.sh"
 
