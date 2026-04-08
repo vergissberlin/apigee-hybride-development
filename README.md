@@ -58,6 +58,8 @@ For a full step-by-step guide to install Apigee Hybrid v1.16 on Azure AKS, see:
 
 📖 **[docs/install-apigee-hybrid.md](docs/install-apigee-hybrid.md)**
 
+The container image includes an **interactive setup script** at `/workspace/scripts/apigee-hybrid-aks-setup.sh` (also [scripts/apigee-hybrid-aks-setup.sh](scripts/apigee-hybrid-aks-setup.sh) in this repository). It sources shared CLI helpers from [scripts/misc-cli-utils.sh](scripts/misc-cli-utils.sh) (colored banners, `info`/`warn`/`error`, `prompt`/`confirm`, `run_cmd`, etc.). It walks through Google’s official hybrid install steps **3–11** (namespace, service accounts, authentication, TLS, `overrides.yaml`, control-plane API access, cert-manager, CRDs, Helm installs), prompts for variables, skips chart download when charts are already baked into the image, and highlights AKS-specific commands (for example `az aks get-credentials` and OIDC for Workload Identity Federation). Run `bash /workspace/scripts/apigee-hybrid-aks-setup.sh --help` inside the container for usage and step names.
+
 The guide covers:
 
 1. **Before You Begin** – authenticate with GCP and Azure, connect to AKS

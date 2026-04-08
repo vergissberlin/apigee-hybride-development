@@ -5,11 +5,12 @@ This guide walks you through installing Apigee Hybrid v1.16 on Azure Kubernetes 
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
-2. [Before You Begin](#before-you-begin)
-3. [Download Helm Charts](#download-helm-charts)
-4. [Create Namespace](#create-namespace)
-5. [Configure Apigee Hybrid](#configure-apigee-hybrid)
-6. [Verify Installation](#verify-installation)
+2. [Interactive setup script](#interactive-setup-script)
+3. [Before You Begin](#before-you-begin)
+4. [Download Helm Charts](#download-helm-charts)
+5. [Create Namespace](#create-namespace)
+6. [Configure Apigee Hybrid](#configure-apigee-hybrid)
+7. [Verify Installation](#verify-installation)
 
 ---
 
@@ -33,6 +34,35 @@ docker run -it --rm \
   -v ~/.config/gcloud:/root/.config/gcloud \
   vergissberlin/apigee-hybrid-development:latest
 ```
+
+---
+
+## Interactive setup script
+
+For an interactive walkthrough aligned with the official Apigee Hybrid v1.16 documentation (steps 3–11: namespace through Helm installs), use the Bash script shipped in the image:
+
+```bash
+bash /workspace/scripts/apigee-hybrid-aks-setup.sh
+```
+
+The script loads [scripts/misc-cli-utils.sh](../scripts/misc-cli-utils.sh) for consistent terminal output (section headers, prompts, and command echoing).
+
+Optional: mount a small env file and load it with `--from-env` (checked paths: `/workspace/.env`, `./apigee-hybrid.env`):
+
+```bash
+docker run -it --rm \
+  -v ~/.kube:/root/.kube \
+  -v ~/.config/gcloud:/root/.config/gcloud \
+  -v "$(pwd)/apigee-hybrid.env:/workspace/.env:ro" \
+  vergissberlin/apigee-hybrid-development:latest \
+  bash /workspace/scripts/apigee-hybrid-aks-setup.sh --from-env
+```
+
+Helm charts are **already downloaded** during the image build (see [Download Apigee Hybrid Charts](https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts)); the script treats step 2 as done and can optionally re-pull a different `CHART_VERSION` if you set it.
+
+Run a single phase (for example after fixing a failure) by passing a step name: `prereq`, `charts`, `namespace`, `serviceaccounts`, `secrets`, `tls`, `overrides`, `controlplane`, `certmanager`, `crds`, or `helm`. Use `bash /workspace/scripts/apigee-hybrid-aks-setup.sh --help` for details.
+
+The script does **not** replace [Part 1 provisioning](https://cloud.google.com/apigee/docs/hybrid/v1.16/precog-enableapi) or cluster creation; complete those first, then use this tool for the runtime install on AKS.
 
 ---
 
