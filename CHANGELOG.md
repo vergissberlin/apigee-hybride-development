@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0](https://github.com/vergissberlin/apigee-hybride-development/compare/1.3.2...1.4.0) (2026-04-08)
+
+
+### Features
+
+* Enhance README and installation documentation with environment variable usage and non-interactive mode details ([0656194](https://github.com/vergissberlin/apigee-hybride-development/commit/06561940d0dd3f288ba32f15c67665a1373a5ae5))
+* Update README.md to include usage examples for new features and clarify installation steps ([7b87284](https://github.com/vergissberlin/apigee-hybride-development/commit/7b872841b554b65b1242978f4fc8709fa4a1ec03))
+
+
+### Documentation
+
+* Update README.md to clarify repository affiliation and enhance description of base image and included tools ([e7210a6](https://github.com/vergissberlin/apigee-hybride-development/commit/e7210a6617d35019d843a2dfc61b709f5487e318))
+
 ## [1.3.2](https://github.com/vergissberlin/apigee-hybride-development/compare/1.3.1...1.3.2) (2026-04-08)
 
 
