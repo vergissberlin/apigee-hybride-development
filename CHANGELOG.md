@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.3.2](https://github.com/vergissberlin/apigee-hybride-development/compare/1.3.1...1.3.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* align Docker Hub image name with repository (apigee-hybride-development) ([df46a22](https://github.com/vergissberlin/apigee-hybride-development/commit/df46a2264eb4a360688e791be3beffee3ad748bc))
+
+
+### Documentation
+
+* Enhance documentation for Docker image publishing and Release Please setup ([655ced2](https://github.com/vergissberlin/apigee-hybride-development/commit/655ced2c8b5207d63c6c3577c65119b8793ae94e))
+* Update CONTRIBUTING.md and docker-publish.yml to include weekly schedule for Docker image publishing ([776903d](https://github.com/vergissberlin/apigee-hybride-development/commit/776903d2164cf1a26b6361cb6a9c3de5eea477ec))
+
+
+### Chores
+
+* Add interactive setup script for Apigee Hybrid AKS installation and update documentation ([d8a7ec8](https://github.com/vergissberlin/apigee-hybride-development/commit/d8a7ec8d236bbeb2b84c05e95a260302e41b4223))
+* Refactor script directory resolution in apigee-hybrid-aks-setup.sh for improved symlink handling ([dff493a](https://github.com/vergissberlin/apigee-hybride-development/commit/dff493a29a099cd7157a436a1dd97cc7d822b302))
+* Update Dockerfile to append kubectl alias in both .zshrc and .bashrc for improved shell usability ([42f2893](https://github.com/vergissberlin/apigee-hybride-development/commit/42f2893dded8045a36410d75946252403fca7ad9))
+* Update Dockerfile to bump version to 1.3.1 and add OpenSSL package for enhanced functionality ([ad6bb6a](https://github.com/vergissberlin/apigee-hybride-development/commit/ad6bb6a36c7b2023d93e443f503a0b8e3a43cb05))
+* Update Dockerfile to create symlink for apigee-hybrid-aks-setup script and enhance README.md for script accessibility ([5e96b0c](https://github.com/vergissberlin/apigee-hybride-development/commit/5e96b0cd07474a6201fdcc5fcb8d337fa03189a6))
+
 ## [1.3.1](https://github.com/vergissberlin/apigee-hybride-development/compare/1.3.0...1.3.1) (2026-04-08)
 
 
