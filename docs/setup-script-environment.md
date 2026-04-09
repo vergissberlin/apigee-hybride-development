@@ -16,6 +16,8 @@ Use this for automation or CI when all required variables are supplied.
 - **`docker run -e` / `--env-file`**: variables are already in the shell environment when the script starts. You do **not** need `--from-env` for those.
 - **`--from-env`**: loads the first existing file among `/workspace/.env`, `./apigee-hybrid.env`, and `$HOME/.apigee-hybrid.env` (`set -a` / `source`). Use this when you prefer a mounted env file instead of repeating `-e` flags.
 
+A starting template with placeholders is in [`.env.example`](../.env.example) at the repository root: copy it to `.env` or `apigee-hybrid.env`, edit the values, and keep those files out of version control.
+
 ## Variable reference
 
 | Variable | Description | Typical default / notes |

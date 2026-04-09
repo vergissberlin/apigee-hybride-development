@@ -29,7 +29,7 @@ docker run -it --rm --platform linux/amd64 \
 
 Or use [`just`](https://github.com/casey/just): `just pull` / `just run` (the repo `justfile` sets the platform for you).
 
-You can pass setup configuration with **`docker run -e KEY=value`**, **`--env-file .env`**, or a mounted file plus **`apigee-hybrid-aks-setup --from-env`** (see [docs/setup-script-environment.md](docs/setup-script-environment.md)). Set **`APIGEE_SETUP_NONINTERACTIVE=1`** to run without interactive prompts when all required variables are supplied.
+You can pass setup configuration with **`docker run -e KEY=value`**, **`--env-file .env`**, or a mounted file plus **`apigee-hybrid-aks-setup --from-env`** (see [docs/setup-script-environment.md](docs/setup-script-environment.md)). Copy [`.env.example`](.env.example) to `.env` (or `apigee-hybrid.env`) and adjust placeholders. Set **`APIGEE_SETUP_NONINTERACTIVE=1`** to run without interactive prompts when all required variables are supplied.
 
 ## Running in Kubernetes
 
