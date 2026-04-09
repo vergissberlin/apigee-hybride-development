@@ -28,6 +28,8 @@ All required tools are included in this Docker image:
 
 The published image is **`linux/amd64`**. On **Apple Silicon**, add **`--platform linux/amd64`** to `docker pull` / `docker run` (or use the repo **`justfile`**).
 
+If you want to run the **same image inside a Kubernetes cluster** (Job/Pod) with mounts and environment variables for GCP and Azure, see [run-in-kubernetes.md](run-in-kubernetes.md).
+
 Start the development container:
 
 ```bash

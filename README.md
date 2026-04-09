@@ -31,6 +31,10 @@ Or use [`just`](https://github.com/casey/just): `just pull` / `just run` (the re
 
 You can pass setup configuration with **`docker run -e KEY=value`**, **`--env-file .env`**, or a mounted file plus **`apigee-hybrid-aks-setup --from-env`** (see [docs/setup-script-environment.md](docs/setup-script-environment.md)). Set **`APIGEE_SETUP_NONINTERACTIVE=1`** to run without interactive prompts when all required variables are supplied.
 
+## Running in Kubernetes
+
+To run this image as a **Pod**, **Job**, or **CronJob** inside a cluster (with **Google Cloud** and **Azure** credentials via Secrets and env vars instead of laptop bind mounts), see **[docs/run-in-kubernetes.md](docs/run-in-kubernetes.md)**.
+
 Maintainers: where images are published, CI triggers, and registry setup are documented in [CONTRIBUTING.md — Releases and CI](CONTRIBUTING.md#releases-and-ci).
 
 ## Build the Image Locally
