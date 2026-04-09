@@ -59,23 +59,26 @@ jobs:
           cp CHANGELOG.md "$WIKI_BUILD/Changelog.md"
           cp docs/wiki/_Sidebar.md docs/wiki/_Footer.md "$WIKI_BUILD/"
 
-          # Rewrite links for GitHub Wiki (no .md suffix in wiki page targets; Home; docs/ paths)
+          # Rewrite links for GitHub Wiki: targets must be unique page names only — not
+          # docs/page (slashes make GitHub resolve to raw.githubusercontent.com). See:
+          # https://github.com/tajmone/github-tests/wiki/subfolders
           find "$WIKI_BUILD" -type f -name '*.md' -print0 | while IFS= read -r -d '' f; do
             perl -i -0pe '
-              s{\]\(docs/([^)#]+)\.md\)}{](docs/$1)}g;
-              s{\]\(docs/([^)#]+)\.md#}{](docs/$1#}g;
+              s{\]\(docs/([^)#]+)\.md\)}{]($1)}g;
+              s{\]\(docs/([^)#]+)\.md#}{]($1#}g;
+              s{\]\(docs/([^)#]+)\)}{]($1)}g;
               s{CONTRIBUTING\.md}{Contributing}g;
               s{CHANGELOG\.md}{Changelog}g;
               s{\]\(README\.md\)}{](Home)}g;
               s{\]\(README\.md#}{](Home#}g;
               s{\]\(\.\./README\.md\)}{](Home)}g;
               s{\]\(\.\./README\.md#}{](Home#}g;
-              s{\]\(run-in-kubernetes\.md\)}{](docs/run-in-kubernetes)}g;
-              s{\]\(setup-script-environment\.md\)}{](docs/setup-script-environment)}g;
-              s{\]\(install-apigee-hybrid\.md\)}{](docs/install-apigee-hybrid)}g;
+              s{\]\(run-in-kubernetes\.md\)}{](run-in-kubernetes)}g;
+              s{\]\(setup-script-environment\.md\)}{](setup-script-environment)}g;
+              s{\]\(install-apigee-hybrid\.md\)}{](install-apigee-hybrid)}g;
               s{\]\(scripts/([^)]+)\)}{]($ENV{GITHUB_REPO_URL}/blob/main/scripts/$1)}g;
               s{\]\(\.github/([^)]+)\)}{]($ENV{GITHUB_REPO_URL}/blob/main/.github/$1)}g;
-              s{\[docs/([^]\[]+)\.md\]}{[docs/$1]}g;
+              s{\[docs/([^]\[]+)\.md\]}{[$1]}g;
               s{\[README\.md\]}{[Home]}g;
               s{\[CHANGELOG\.md\]}{[Changelog]}g;
             ' "$f"
