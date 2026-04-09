@@ -44,6 +44,16 @@ The [docker-publish workflow](.github/workflows/docker-publish.yml) builds and p
 
 If you cut release tags, keep them consistent with how registry tagging should work for consumers (see the workflow’s tag filters).
 
+### GitHub Wiki sync
+
+The [wiki-sync workflow](.github/workflows/wiki-sync.yml) updates the repository’s **[GitHub Wiki](https://github.com/vergissberlin/apigee-hybride-development/wiki)** from this repo’s documentation. It runs on pushes to `main` when `README.md`, `docs/**`, `CONTRIBUTING.md`, `CHANGELOG.md`, or the workflow file changes, and can be triggered manually (**Actions → Sync wiki → Run workflow**).
+
+**What gets published:** `README.md` becomes the wiki **Home** page (with a short header from [`docs/wiki/_Header.md`](docs/wiki/_Header.md)), files under [`docs/`](docs/) keep the same paths, and [`CONTRIBUTING.md`](CONTRIBUTING.md) / [`CHANGELOG.md`](CHANGELOG.md) become **Contributing** and **Changelog**. Layout files [`docs/wiki/_Sidebar.md`](docs/wiki/_Sidebar.md) and [`docs/wiki/_Footer.md`](docs/wiki/_Footer.md) define the wiki sidebar and footer.
+
+**Single source of truth:** edit documentation in this repository. Changes made only in the wiki UI may be overwritten on the next successful sync.
+
+**Authentication:** the job uses `GITHUB_TOKEN` by default. If the push to `*.wiki.git` fails (for example due to organization policy), add a repository secret **`WIKI_SYNC_TOKEN`**: a classic PAT with `repo` scope, or a fine-grained token with **Contents** read/write on this repository.
+
 ### Release Please
 
 - **Release Please** runs on pushes to `main` and opens/maintains release PRs using [`.release-please-config.json`](.release-please-config.json).

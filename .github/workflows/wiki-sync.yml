@@ -1,0 +1,114 @@
+# Sync Markdown documentation from this repository to the native GitHub Wiki
+# (https://github.com/vergissberlin/apigee-hybride-development.wiki.git).
+#
+# Single source of truth: edit README.md, docs/, and docs/wiki/ in this repo.
+# Edits made only in the wiki UI may be overwritten on the next successful run.
+#
+# If push fails with the default token (some org policies), add a repository secret
+# WIKI_SYNC_TOKEN: classic PAT with repo scope, or fine-grained token with Contents
+# read/write on this repository.
+
+name: Sync wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "docs/**"
+      - "CONTRIBUTING.md"
+      - "CHANGELOG.md"
+      - ".github/workflows/wiki-sync.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wiki-sync
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build wiki tree and rewrite links
+        env:
+          GITHUB_REPO_URL: https://github.com/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          export GITHUB_REPO_URL
+          WIKI_BUILD="$RUNNER_TEMP/wiki_build"
+          rm -rf "$WIKI_BUILD"
+          mkdir -p "$WIKI_BUILD/docs"
+
+          # Home = header fragment + README
+          {
+            cat docs/wiki/_Header.md
+            echo ""
+            cat README.md
+          } > "$WIKI_BUILD/Home.md"
+
+          cp docs/install-apigee-hybrid.md docs/run-in-kubernetes.md docs/setup-script-environment.md \
+            "$WIKI_BUILD/docs/"
+          cp CONTRIBUTING.md "$WIKI_BUILD/Contributing.md"
+          cp CHANGELOG.md "$WIKI_BUILD/Changelog.md"
+          cp docs/wiki/_Sidebar.md docs/wiki/_Footer.md "$WIKI_BUILD/"
+
+          # Rewrite links for GitHub Wiki (no .md suffix in wiki page targets; Home; docs/ paths)
+          find "$WIKI_BUILD" -type f -name '*.md' -print0 | while IFS= read -r -d '' f; do
+            perl -i -0pe '
+              s{\]\(docs/([^)#]+)\.md\)}{](docs/$1)}g;
+              s{\]\(docs/([^)#]+)\.md#}{](docs/$1#}g;
+              s{CONTRIBUTING\.md}{Contributing}g;
+              s{CHANGELOG\.md}{Changelog}g;
+              s{\]\(README\.md\)}{](Home)}g;
+              s{\]\(README\.md#}{](Home#}g;
+              s{\]\(\.\./README\.md\)}{](Home)}g;
+              s{\]\(\.\./README\.md#}{](Home#}g;
+              s{\]\(run-in-kubernetes\.md\)}{](docs/run-in-kubernetes)}g;
+              s{\]\(setup-script-environment\.md\)}{](docs/setup-script-environment)}g;
+              s{\]\(install-apigee-hybrid\.md\)}{](docs/install-apigee-hybrid)}g;
+              s{\]\(scripts/([^)]+)\)}{]($ENV{GITHUB_REPO_URL}/blob/main/scripts/$1)}g;
+              s{\]\(\.github/([^)]+)\)}{]($ENV{GITHUB_REPO_URL}/blob/main/.github/$1)}g;
+              s{\[docs/([^]\[]+)\.md\]}{[docs/$1]}g;
+              s{\[README\.md\]}{[Home]}g;
+              s{\[CHANGELOG\.md\]}{[Changelog]}g;
+            ' "$f"
+          done
+
+      - name: Push to wiki
+        env:
+          WIKI_PUSH_TOKEN: ${{ secrets.WIKI_SYNC_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          WIKI_BUILD="$RUNNER_TEMP/wiki_build"
+          WIKI_DIR="$RUNNER_TEMP/wiki_repo"
+          WIKI_URL="https://x-access-token:${WIKI_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+
+          rm -rf "$WIKI_DIR"
+          if ! git clone --depth=1 "$WIKI_URL" "$WIKI_DIR" 2>/dev/null; then
+            mkdir "$WIKI_DIR"
+            git -C "$WIKI_DIR" init
+            git -C "$WIKI_DIR" remote add origin "$WIKI_URL"
+          fi
+
+          # Ensure default branch is master (GitHub Wiki convention)
+          git -C "$WIKI_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$WIKI_DIR" config user.name "github-actions[bot]"
+
+          rsync -a --delete --exclude='.git' "$WIKI_BUILD"/ "$WIKI_DIR"/
+
+          git -C "$WIKI_DIR" add -A
+          if git -C "$WIKI_DIR" diff --cached --quiet; then
+            echo "No wiki changes to commit."
+            exit 0
+          fi
+
+          git -C "$WIKI_DIR" commit -m "docs(wiki): sync from ${GITHUB_SHA}"
+          git -C "$WIKI_DIR" branch -M master
+          git -C "$WIKI_DIR" push origin master
