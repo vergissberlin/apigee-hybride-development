@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.5.0](https://github.com/vergissberlin/apigee-hybride-development/compare/1.4.0...1.5.0) (2026-04-09)
+
+
+### Features
+
+* Add GitHub Wiki sync instructions to CONTRIBUTING.md for automated documentation updates ([c9f0398](https://github.com/vergissberlin/apigee-hybride-development/commit/c9f039840f65a41e49863e02daae0d5a7f75a645))
+* Update justfile and documentation to enforce linux/amd64 platform for Docker commands on Apple Silicon ([608eb26](https://github.com/vergissberlin/apigee-hybride-development/commit/608eb264c4246eaa4a620f852c9513e0fff5f468))
+
+
+### Bug Fixes
+
+* Update link formatting in CONTRIBUTING.md, wiki-sync workflow, and sidebar for GitHub Wiki compatibility ([52d21b7](https://github.com/vergissberlin/apigee-hybride-development/commit/52d21b7554a2f1cf18aba35b973156d571a05d20))
+
+
+### Documentation
+
+* Add Kubernetes usage instructions to README and installation guide for running images in clusters ([6ede39e](https://github.com/vergissberlin/apigee-hybride-development/commit/6ede39e4cf02e801c3eaf4bda0d9a9827ba2b912))
+* Clarify Docker image tagging strategy in CONTRIBUTING.md and update docker-publish workflow comments ([b461992](https://github.com/vergissberlin/apigee-hybride-development/commit/b46199203537450d070311e7fcd69ca9d1ff83bd))
+
 ## [1.4.0](https://github.com/vergissberlin/apigee-hybride-development/compare/1.3.2...1.4.0) (2026-04-08)
 
 
