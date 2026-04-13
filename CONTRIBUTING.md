@@ -14,13 +14,33 @@ Thanks for improving this project. This repository ships a **Docker image** for 
 2. **Fork the repository**, create a branch from `main`, and open a **pull request** when your change is ready.
 3. Describe **what** changed and **why** in the PR description. Link related issues when applicable.
 
-## Local checks
-
-Before opening a PR:
+## Build the image locally
 
 ```bash
 docker build -t apigee-hybride-development:local .
-docker run --rm -it apigee-hybride-development:local zsh
+```
+
+To match the **published** image and **CI** (always `linux/amd64`), build with:
+
+```bash
+docker build --platform linux/amd64 -t apigee-hybride-development:local .
+```
+
+On **Apple Silicon**, a plain `docker build` produces an **arm64** image (different from the registry). Use `--platform linux/amd64` when you want the same architecture as Docker Hub / GHCR.
+
+The default shell is **bash** (`CMD ["/bin/bash"]`). **zsh** is also installed. **`APIGEE_HELM_CHARTS_HOME`**, **`CHART_REPO`**, and **`CHART_VERSION`** are set in the environment and in `/root/.zshrc` (see [Download charts](https://cloud.google.com/apigee/docs/hybrid/v1.16/install-download-charts)). The image build pulls the default Apigee Hybrid charts (operator, datastore, env, ingress-manager, org, redis, telemetry, virtualhost) from **`CHART_REPO`** at **`CHART_VERSION`** (override at build with `--build-arg CHART_VERSION=…`). Pulling from Google’s OCI registry may require **`gcloud auth application-default login`** (or equivalent) on the host building the image. Example:
+
+```bash
+docker run -it --rm --platform linux/amd64 vergissberlin/apigee-hybride-development:latest zsh
+```
+
+## Local checks
+
+Before opening a PR, build and run the container using the same platform as CI when possible (see [Build the image locally](#build-the-image-locally)):
+
+```bash
+docker build --platform linux/amd64 -t apigee-hybride-development:local .
+docker run --rm -it --platform linux/amd64 apigee-hybride-development:local zsh
 ```
 
 If you changed tooling versions or install steps, run the container briefly and sanity-check the relevant CLI (`gcloud`, `az`, `kubectl`, `helm`, etc.).
