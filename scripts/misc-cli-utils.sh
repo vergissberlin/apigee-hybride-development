@@ -347,6 +347,35 @@ ensure_google_cloud_sdk() {
   success "Google Cloud SDK is available."
 }
 
+# Install HTTPie for the current user (pip --user) when the http CLI is missing.
+# Skip with SKIP_HTTPIE_ENSURE=1. Prefers python3 -m pip, falls back to pip.
+ensure_httpie() {
+  [[ "${SKIP_HTTPIE_ENSURE:-0}" == "1" ]] && return 0
+  command -v http >/dev/null 2>&1 && return 0
+
+  local pip_cmd=()
+  if python3 -m pip --version >/dev/null 2>&1; then
+    pip_cmd=(python3 -m pip)
+  elif command -v pip >/dev/null 2>&1; then
+    pip_cmd=(pip)
+  else
+    die "HTTPie auto-install needs python3 -m pip or pip."
+  fi
+
+  info "http (HTTPie) not found; installing with pip install --user …"
+  if ! "${pip_cmd[@]}" install --user httpie; then
+    die "HTTPie installation failed."
+  fi
+
+  local user_bin="${HOME}/.local/bin"
+  if [[ -d "$user_bin" ]]; then
+    PATH="${user_bin}:${PATH}"
+    export PATH
+  fi
+  command -v http >/dev/null 2>&1 || die "http still not on PATH after install (add ~/.local/bin to PATH)."
+  success "HTTPie is available."
+}
+
 # Print a short bullet list (no boxes); use for menus.
 bullet_list() {
   local line

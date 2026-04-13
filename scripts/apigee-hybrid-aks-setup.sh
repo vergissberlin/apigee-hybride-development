@@ -82,7 +82,7 @@ load_optional_env() {
 }
 
 require_tools() {
-  require_cmds kubectl helm gcloud curl az jq
+  require_cmds kubectl helm gcloud curl az jq http
 }
 
 step_prerequisites() {
@@ -841,6 +841,8 @@ Docker / environment:
 
   SKIP_GCLOUD_SDK_ENSURE=1        Do not auto-install Google Cloud SDK when gcloud is missing (default: install).
 
+  SKIP_HTTPIE_ENSURE=1            Do not auto-install HTTPie (pip --user) when http is missing (default: install).
+
 Common variables (see docs/setup-script-environment.md for the full list):
   APIGEE_HELM_CHARTS_HOME   Default: /workspace/apigee-hybrid/helm-charts
   CHART_REPO, CHART_VERSION, CERT_MANAGER_VERSION
@@ -872,6 +874,7 @@ main() {
   fi
 
   ensure_google_cloud_sdk
+  ensure_httpie
   require_tools
 
   case "$start_step" in
