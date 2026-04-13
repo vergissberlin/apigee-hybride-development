@@ -839,6 +839,8 @@ Docker / environment:
                                     uses each prompt's default (y/n). Required values must be set or
                                     defaulted — missing values exit with an error.
 
+  SKIP_GCLOUD_SDK_ENSURE=1        Do not auto-install Google Cloud SDK when gcloud is missing (default: install).
+
 Common variables (see docs/setup-script-environment.md for the full list):
   APIGEE_HELM_CHARTS_HOME   Default: /workspace/apigee-hybrid/helm-charts
   CHART_REPO, CHART_VERSION, CERT_MANAGER_VERSION
@@ -864,11 +866,13 @@ main() {
   done
 
   header "Apigee Hybrid AKS" "Interactive setup v${SCRIPT_VERSION}" cyan
-  require_tools
 
   if [[ "$use_env" == "y" ]]; then
     load_optional_env
   fi
+
+  ensure_google_cloud_sdk
+  require_tools
 
   case "$start_step" in
     all)

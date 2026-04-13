@@ -320,6 +320,33 @@ require_cmds() {
   fi
 }
 
+# Install Google Cloud SDK into $HOME/google-cloud-sdk when gcloud is missing (e.g. minimal Cloud Shell).
+# Skip with SKIP_GCLOUD_SDK_ENSURE=1. Requires curl and bash for the installer.
+ensure_google_cloud_sdk() {
+  [[ "${SKIP_GCLOUD_SDK_ENSURE:-0}" == "1" ]] && return 0
+  command -v gcloud >/dev/null 2>&1 && return 0
+
+  info "gcloud not found; installing Google Cloud SDK to \$HOME/google-cloud-sdk …"
+  export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+  if ! curl -fsSL https://sdk.cloud.google.com | bash -s -- --disable-prompts; then
+    die "Google Cloud SDK installation failed."
+  fi
+
+  local sdk_home="${HOME}/google-cloud-sdk"
+  [[ -d "$sdk_home" ]] || die "Google Cloud SDK install directory missing: $sdk_home"
+
+  if [[ -f "${sdk_home}/path.bash.inc" ]]; then
+    # shellcheck source=/dev/null
+    source "${sdk_home}/path.bash.inc"
+  fi
+  if ! command -v gcloud >/dev/null 2>&1; then
+    PATH="${sdk_home}/bin:${PATH}"
+    export PATH
+  fi
+  command -v gcloud >/dev/null 2>&1 || die "gcloud still not on PATH after install."
+  success "Google Cloud SDK is available."
+}
+
 # Print a short bullet list (no boxes); use for menus.
 bullet_list() {
   local line

@@ -24,6 +24,7 @@ A starting template with placeholders is in [`.env.example`](../.env.example) at
 |----------|-------------|-------------------------|
 | **General** | | |
 | `APIGEE_SETUP_NONINTERACTIVE` | Set to `1` for non-interactive runs | unset (interactive) |
+| `SKIP_GCLOUD_SDK_ENSURE` | Set to `1` to skip auto-install of the Google Cloud SDK when `gcloud` is missing | unset (script installs SDK if needed) |
 | `APIGEE_HELM_CHARTS_HOME` | Helm charts directory | `/workspace/apigee-hybrid/helm-charts` |
 | `CHART_REPO` | OCI chart repo URL | Apigee public OCI |
 | `CHART_VERSION` | Chart version (optional re-pull in `charts` step) | image build default; empty skips re-pull |
