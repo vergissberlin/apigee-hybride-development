@@ -45,6 +45,37 @@ docker run --rm -it --platform linux/amd64 apigee-hybride-development:local zsh
 
 If you changed tooling versions or install steps, run the container briefly and sanity-check the relevant CLI (`gcloud`, `az`, `kubectl`, `helm`, etc.).
 
+## Setup script tests (local and CI)
+
+The interactive installer is [`scripts/apigee-hybrid-aks-setup.sh`](scripts/apigee-hybrid-aks-setup.sh). Automated checks run in GitHub Actions (workflow [`.github/workflows/setup-script-test.yml`](.github/workflows/setup-script-test.yml)) on pull requests that touch the scripts, Dockerfile, `justfile`, or [`tests/integration/`](tests/integration/). You can also run the workflow manually (**Actions → Setup script tests → Run workflow**).
+
+**What is covered**
+
+- **Tier 1 (smoke):** `/bin/bash -n` on the setup script and [`scripts/misc-cli-utils.sh`](scripts/misc-cli-utils.sh), then `apigee-hybrid-aks-setup --help` inside a freshly built **`linux/amd64`** image (same architecture family as Azure Cloud Shell on **x86_64**). This verifies syntax and that required CLIs are on `PATH` in the image.
+- **Tier 2 (integration, no cloud):** `apigee-hybrid-aks-setup prereq` with `APIGEE_SETUP_NONINTERACTIVE=1` and **`SKIP_AZ_GET_CREDENTIALS=1`** / **`SKIP_KUBECTL_CLUSTER_CHECK=1`** so CI does not need Azure or a kubeconfig. Variables are documented in [`docs/setup-script-environment.md`](docs/setup-script-environment.md).
+- **Alternate Tier 2:** mount [`tests/integration/stubs/`](tests/integration/stubs/) first on `PATH` so `az` / `kubectl` are stubbed; see that folder’s README. The [`justfile`](justfile) recipe `test-setup-prereq-stubs` runs that mode locally.
+
+**Local commands** (requires [just](https://github.com/casey/just); needs Docker with `linux/amd64` support, e.g. `--platform linux/amd64` on Apple Silicon):
+
+```bash
+just test-setup-smoke
+just test-setup-prereq-mock
+# optional: stub PATH instead of SKIP_* env vars
+just test-setup-prereq-stubs
+```
+
+**Azure Cloud Shell**
+
+Docker-based tests approximate the tooling stack and **amd64** userspace; they do **not** replicate Cloud Shell identity, mounts, or kernel. After meaningful changes to auth or cluster steps, do a short manual run in Azure Cloud Shell before release.
+
+### Dev Containers
+
+The repository includes [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json), which builds from the same [`Dockerfile`](Dockerfile). The editor mounts this repo under `/workspaces/…` so your working tree stays editable; chart tarballs baked into **`/workspace/apigee-hybrid/helm-charts`** in the image remain available at the default **`APIGEE_HELM_CHARTS_HOME`**. Run the setup script from the cloned repo so you use your current sources, for example:
+
+```bash
+bash scripts/apigee-hybrid-aks-setup.sh --help
+```
+
 ## Commit messages
 
 Use **[Conventional Commits](https://www.conventionalcommits.org/)** in English (for example `fix: pin kubectl apt repo`, `feat: add tool xyz`, `docs: clarify volume mounts`). This keeps the history readable and matches **[Release Please](.github/workflows/release-please.yml)**, which updates [CHANGELOG.md](CHANGELOG.md) from those commits.

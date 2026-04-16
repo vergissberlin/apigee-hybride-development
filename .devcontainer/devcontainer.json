@@ -1,0 +1,10 @@
+{
+  "name": "apigee-hybride-development",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "root",
+  "postCreateCommand": "bash scripts/apigee-hybrid-aks-setup.sh --help"
+}

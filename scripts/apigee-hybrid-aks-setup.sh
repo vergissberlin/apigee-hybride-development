@@ -112,13 +112,19 @@ step_prerequisites() {
   prompt CLUSTER_NAME "my-aks" "AKS cluster name"
   prompt CLUSTER_LOCATION "westeurope" "Azure region of the cluster (for k8sCluster.region)"
 
-  if confirm "Fetch AKS credentials (az aks get-credentials)?" "y"; then
+  if [[ "${SKIP_AZ_GET_CREDENTIALS:-0}" != "1" ]] && confirm "Fetch AKS credentials (az aks get-credentials)?" "y"; then
     run_cmd az aks get-credentials --resource-group "$AZURE_RESOURCE_GROUP" --name "$CLUSTER_NAME"
   fi
+  if [[ "${SKIP_AZ_GET_CREDENTIALS:-0}" == "1" ]]; then
+    info "SKIP_AZ_GET_CREDENTIALS=1 — skipping az aks get-credentials."
+  fi
 
-  if confirm "Verify cluster connectivity?" "y"; then
+  if [[ "${SKIP_KUBECTL_CLUSTER_CHECK:-0}" != "1" ]] && confirm "Verify cluster connectivity?" "y"; then
     run_cmd kubectl cluster-info
     run_cmd kubectl get nodes
+  fi
+  if [[ "${SKIP_KUBECTL_CLUSTER_CHECK:-0}" == "1" ]]; then
+    info "SKIP_KUBECTL_CLUSTER_CHECK=1 — skipping kubectl cluster-info / get nodes."
   fi
 
   prompt PROJECT_ID "" "Google Cloud project ID (Apigee / GCP)"
@@ -842,6 +848,10 @@ Docker / environment:
   SKIP_GCLOUD_SDK_ENSURE=1        Do not auto-install Google Cloud SDK when gcloud is missing (default: install).
 
   SKIP_HTTPIE_ENSURE=1            Do not auto-install HTTPie (pip --user) when http is missing (default: install).
+
+  SKIP_AZ_GET_CREDENTIALS=1       Skip az aks get-credentials in prereq (for CI / dry environments).
+
+  SKIP_KUBECTL_CLUSTER_CHECK=1    Skip kubectl cluster-info and kubectl get nodes in prereq (for CI / dry environments).
 
 Common variables (see docs/setup-script-environment.md for the full list):
   APIGEE_HELM_CHARTS_HOME   Default: /workspace/apigee-hybrid/helm-charts

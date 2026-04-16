@@ -1,0 +1,71 @@
+# Smoke and integration checks for scripts/apigee-hybrid-aks-setup.sh (no cloud credentials).
+name: Setup script tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/**"
+      - "Dockerfile"
+      - ".github/workflows/setup-script-test.yml"
+      - "justfile"
+      - "tests/integration/**"
+      - ".devcontainer/**"
+      - "CONTRIBUTING.md"
+      - "docs/install-apigee-hybrid.md"
+      - "docs/setup-script-environment.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/**"
+      - "Dockerfile"
+      - ".github/workflows/setup-script-test.yml"
+      - "justfile"
+      - "tests/integration/**"
+      - ".devcontainer/**"
+      - "CONTRIBUTING.md"
+      - "docs/install-apigee-hybrid.md"
+      - "docs/setup-script-environment.md"
+
+jobs:
+  setup-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test image (linux/amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: apigee-hybrid-setup:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Tier 1 — syntax and --help
+        run: |
+          set -eux
+          docker run --rm --platform linux/amd64 apigee-hybrid-setup:test \
+            /bin/bash -n /workspace/scripts/apigee-hybrid-aks-setup.sh
+          docker run --rm --platform linux/amd64 apigee-hybrid-setup:test \
+            /bin/bash -n /workspace/scripts/misc-cli-utils.sh
+          docker run --rm --platform linux/amd64 apigee-hybrid-setup:test \
+            apigee-hybrid-aks-setup --help
+
+      - name: Tier 2 — prereq (non-interactive, skip cluster calls)
+        run: |
+          set -eux
+          docker run --rm --platform linux/amd64 \
+            -e APIGEE_SETUP_NONINTERACTIVE=1 \
+            -e SKIP_AZ_GET_CREDENTIALS=1 \
+            -e SKIP_KUBECTL_CLUSTER_CHECK=1 \
+            -e PROJECT_ID=ci-test-project \
+            -e ORG_NAME=ci-test-project \
+            apigee-hybrid-setup:test \
+            apigee-hybrid-aks-setup prereq

@@ -26,6 +26,8 @@ A starting template with placeholders is in [`.env.example`](../.env.example) at
 | `APIGEE_SETUP_NONINTERACTIVE` | Set to `1` for non-interactive runs | unset (interactive) |
 | `SKIP_GCLOUD_SDK_ENSURE` | Set to `1` to skip auto-install of the Google Cloud SDK when `gcloud` is missing | unset (script installs SDK if needed) |
 | `SKIP_HTTPIE_ENSURE` | Set to `1` to skip auto-install of HTTPie (`pip install --user`) when the `http` CLI is missing | unset (script installs HTTPie if needed) |
+| `SKIP_AZ_GET_CREDENTIALS` | Set to `1` to skip `az aks get-credentials` in the `prereq` step (local/CI without AKS) | unset |
+| `SKIP_KUBECTL_CLUSTER_CHECK` | Set to `1` to skip `kubectl cluster-info` and `kubectl get nodes` in the `prereq` step (local/CI without a cluster) | unset |
 | `APIGEE_HELM_CHARTS_HOME` | Helm charts directory | `/workspace/apigee-hybrid/helm-charts` |
 | `CHART_REPO` | OCI chart repo URL | Apigee public OCI |
 | `CHART_VERSION` | Chart version (optional re-pull in `charts` step) | image build default; empty skips re-pull |

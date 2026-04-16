@@ -1,6 +1,8 @@
 # Apigee Hybrid development image — https://github.com/vergissberlin/apigee-hybride-development
 # Requires: Docker, https://github.com/casey/just
 #
+# Setup script tests: test-setup-smoke, test-setup-prereq-mock, test-setup-prereq-stubs (see CONTRIBUTING.md).
+#
 # Override image: just --set image ghcr.io/owner/apigee-hybride-development:latest run
 
 # Published image (override with `just --set image …`)
@@ -41,3 +43,33 @@ run-local: build
       "{{image-local}}" \
       /bin/zsh
 
+# Tier 1 — bash -n + --help (matches CI setup-script-test workflow)
+test-setup-smoke: build
+    docker run --rm --platform "{{platform}}" "{{image-local}}" \
+      /bin/bash -n /workspace/scripts/apigee-hybrid-aks-setup.sh
+    docker run --rm --platform "{{platform}}" "{{image-local}}" \
+      /bin/bash -n /workspace/scripts/misc-cli-utils.sh
+    docker run --rm --platform "{{platform}}" "{{image-local}}" \
+      apigee-hybrid-aks-setup --help
+
+# Tier 2 — prereq without real AKS (SKIP_* env vars; see docs/setup-script-environment.md)
+test-setup-prereq-mock: build
+    docker run --rm --platform "{{platform}}" \
+      -e APIGEE_SETUP_NONINTERACTIVE=1 \
+      -e SKIP_AZ_GET_CREDENTIALS=1 \
+      -e SKIP_KUBECTL_CLUSTER_CHECK=1 \
+      -e PROJECT_ID=local-test-project \
+      -e ORG_NAME=local-test-project \
+      "{{image-local}}" \
+      apigee-hybrid-aks-setup prereq
+
+# Tier 2 (alternate) — stub az/kubectl on PATH (see tests/integration/stubs/README.md)
+test-setup-prereq-stubs: build
+    docker run --rm --platform "{{platform}}" \
+      -v "{{justfile_directory()}}/tests/integration/stubs:/integration-stubs" \
+      -e PATH="/integration-stubs:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+      -e APIGEE_SETUP_NONINTERACTIVE=1 \
+      -e PROJECT_ID=local-test-project \
+      -e ORG_NAME=local-test-project \
+      "{{image-local}}" \
+      apigee-hybrid-aks-setup prereq

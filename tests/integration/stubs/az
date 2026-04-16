@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Test stub: no-op AKS kubeconfig fetch. Delegates all other az invocations to /usr/bin/az.
+set -euo pipefail
+if [[ "${1-}" == "aks" && "${2-}" == "get-credentials" ]]; then
+  exit 0
+fi
+exec /usr/bin/az "$@"

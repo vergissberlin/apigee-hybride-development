@@ -30,6 +30,10 @@ The published image is **`linux/amd64`**. On **Apple Silicon**, add **`--platfor
 
 If you want to run the **same image inside a Kubernetes cluster** (Job/Pod) with mounts and environment variables for GCP and Azure, see [run-in-kubernetes.md](run-in-kubernetes.md).
 
+### Testing the setup script (local / CI)
+
+Smoke and non-interactive `prereq` checks run in Docker on **`linux/amd64`** (aligned with Azure Cloud Shell **x86_64** userspace). They do not replace a manual sanity check in **Azure Cloud Shell** when you change authentication or cluster steps. See [CONTRIBUTING.md](../CONTRIBUTING.md#setup-script-tests-local-and-ci) and [`docs/setup-script-environment.md`](setup-script-environment.md) (`SKIP_AZ_GET_CREDENTIALS`, `SKIP_KUBECTL_CLUSTER_CHECK`).
+
 Start the development container:
 
 ```bash
