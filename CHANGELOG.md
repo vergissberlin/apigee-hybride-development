@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.6.0](https://github.com/vergissberlin/apigee-hybride-development/compare/1.5.0...1.6.0) (2026-04-16)
+
+
+### Features
+
+* **devcontainer:** add devcontainer.json for streamlined development ([fba4b39](https://github.com/vergissberlin/apigee-hybride-development/commit/fba4b39fafc5c56994e510dafb4250f7e8e5edcf))
+* **docs:** add SKIP_GCLOUD_SDK_ENSURE env var to setup-script-environment.md ([6197469](https://github.com/vergissberlin/apigee-hybride-development/commit/61974690a80505a6e35f4fda0762c5426f155ead))
+* **scripts:** add cloudshell-backup-home.sh for backing up home directory ([6197469](https://github.com/vergissberlin/apigee-hybride-development/commit/61974690a80505a6e35f4fda0762c5426f155ead))
+* **scripts:** add ensure_google_cloud_sdk function to auto-install SDK ([6197469](https://github.com/vergissberlin/apigee-hybride-development/commit/61974690a80505a6e35f4fda0762c5426f155ead))
+* **scripts:** add environment variables to skip az and kubectl commands ([fba4b39](https://github.com/vergissberlin/apigee-hybride-development/commit/fba4b39fafc5c56994e510dafb4250f7e8e5edcf))
+* **setup:** add auto-installation of HTTPie if missing ([213b83d](https://github.com/vergissberlin/apigee-hybride-development/commit/213b83decab60082f4aae9287bdade3f02cefbd4))
+
+
+### Bug Fixes
+
+* **Dockerfile, scripts:** synchronize SCRIPT_VERSION with IMAGE_VERSION in setup script ([e149f8a](https://github.com/vergissberlin/apigee-hybride-development/commit/e149f8ab488facf0aa8f74e2df2e7e9a7dbd4e05))
+* **scripts:** update apigee-hybrid-aks-setup.sh to use ensure_google_cloud_sdk ([6197469](https://github.com/vergissberlin/apigee-hybride-development/commit/61974690a80505a6e35f4fda0762c5426f155ead))
+
+
+### Documentation
+
+* **CONTRIBUTING.md, README.md:** update instructions for building and running Docker images ([d82cc5c](https://github.com/vergissberlin/apigee-hybride-development/commit/d82cc5ca9011b0b3024a002b2d726507803bd88d))
+* **contributing:** update contributing guidelines with setup script tests ([fba4b39](https://github.com/vergissberlin/apigee-hybride-development/commit/fba4b39fafc5c56994e510dafb4250f7e8e5edcf))
+* **environment:** document new environment variables for script testing ([fba4b39](https://github.com/vergissberlin/apigee-hybride-development/commit/fba4b39fafc5c56994e510dafb4250f7e8e5edcf))
+* **install:** add section on testing setup script in install guide ([fba4b39](https://github.com/vergissberlin/apigee-hybride-development/commit/fba4b39fafc5c56994e510dafb4250f7e8e5edcf))
+* Update README and setup-script-environment documentation to include instructions for copying and configuring .env.example file ([5a380ce](https://github.com/vergissberlin/apigee-hybride-development/commit/5a380ce663314c1edcccd821a4eaef114d40c146))
+
+
+### Tests
+
+* **stubs:** introduce test stubs for az and kubectl commands ([fba4b39](https://github.com/vergissberlin/apigee-hybride-development/commit/fba4b39fafc5c56994e510dafb4250f7e8e5edcf))
+
+
+### Continuous Integration
+
+* **workflow:** add setup-script-test.yml for CI testing of setup scripts ([fba4b39](https://github.com/vergissberlin/apigee-hybride-development/commit/fba4b39fafc5c56994e510dafb4250f7e8e5edcf))
+
+
+### Chores
+
+* **justfile:** add justfile recipes for setup script testing ([fba4b39](https://github.com/vergissberlin/apigee-hybride-development/commit/fba4b39fafc5c56994e510dafb4250f7e8e5edcf))
+
 ## [1.5.0](https://github.com/vergissberlin/apigee-hybride-development/compare/1.4.0...1.5.0) (2026-04-09)
 
 
