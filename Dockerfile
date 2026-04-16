@@ -9,9 +9,12 @@ ARG HELM_VERSION=v3.20.1
 # Apigee Hybrid Helm charts (OCI). Override: docker build --build-arg CHART_VERSION=...
 ARG CHART_VERSION=1.16.0-hotfix.1
 
+# Image / setup script user-facing version (bump with releases; LABEL + apigee-hybrid-aks-setup banner).
+ARG IMAGE_VERSION=1.3.1
+
 LABEL maintainer="vergissberlin" \
       description="Docker image for Apigee Hybrid development on Azure AKS" \
-      version="1.3.1"
+      version="${IMAGE_VERSION}"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -83,7 +86,8 @@ WORKDIR /workspace
 
 COPY scripts/misc-cli-utils.sh scripts/apigee-hybrid-aks-setup.sh /workspace/scripts/
 RUN chmod +x /workspace/scripts/apigee-hybrid-aks-setup.sh \
-    && ln -sf /workspace/scripts/apigee-hybrid-aks-setup.sh /usr/bin/apigee-hybrid-aks-setup
+    && ln -sf /workspace/scripts/apigee-hybrid-aks-setup.sh /usr/bin/apigee-hybrid-aks-setup \
+    && sed -i "s/^SCRIPT_VERSION=\"[^\"]*\"/SCRIPT_VERSION=\"${IMAGE_VERSION}\"/" /workspace/scripts/apigee-hybrid-aks-setup.sh
 
 RUN mkdir -p apigee-hybrid/helm-charts
 

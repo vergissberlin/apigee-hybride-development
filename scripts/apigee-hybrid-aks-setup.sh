@@ -24,7 +24,8 @@ unset -f _script_dir 2>/dev/null || true
 # shellcheck source=scripts/misc-cli-utils.sh
 source "${_SCRIPT_DIR}/misc-cli-utils.sh"
 
-SCRIPT_VERSION="1.0.0"
+# Default matches Dockerfile ARG IMAGE_VERSION (image build rewrites this line to stay in sync).
+SCRIPT_VERSION="1.3.1"
 CERT_MANAGER_VERSION="${CERT_MANAGER_VERSION:-v1.19.2}"
 CERT_MANAGER_URL="https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml"
 
